@@ -3,14 +3,14 @@
 <h4 id="function:CLITH:MAKE-WITH-DESTRUCTOR">Generic function: MAKE-WITH-DESTRUCTOR</h4>
 
 ```Lisp
-(defgeneric MAKE-WITH-DESTRUCTOR (OBJECT)
+(defgeneric CLITH:MAKE-WITH-DESTRUCTOR (OBJECT)
   ...)
 ```
 
 <h4 id="function:CLITH:DEFINE-WITH-DESTRUCTOR">Macro: DEFINE-WITH-DESTRUCTOR</h4>
 
 ```Lisp
-(defmacro DEFINE-WITH-DESTRUCTOR (CLASS LAMBDA-LIST &BODY BODY)
+(defmacro CLITH:DEFINE-WITH-DESTRUCTOR (CLASS LAMBDA-LIST &BODY BODY)
   ...)
 ```
 
@@ -29,7 +29,7 @@ to be destroyed.
 ````
 This macro has the following systax:
 
-  (WITH (binding*) form*)
+  (WITH (binding*) declaration* form*)
 
   binding     ::= (var-or-vars constructor-form)
   var-or-vars ::= symbol | (symbol+)

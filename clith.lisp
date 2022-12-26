@@ -17,10 +17,8 @@ values the constructor returns."))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   
   (defun check-class (class)
-    (unless (or (subtypep class 'built-in-class)
-		(subtypep class 'structure-class)
-		(subtypep class 'standard-class))
-      (error "CLITH error: ~s is not a class."
+    (unless (symbolp class)
+      (error "CLITH error: ~s must be a symbol denoting a class."
 	     class))))
 
 (adp:defmacro define-with-destructor (class lambda-list &body body)
@@ -52,7 +50,7 @@ to be destroyed."
       (error "CLITH error: Expected a list of bindings. Found: ~s"
 	     bindings))
     (loop for binding in bindings
-	  do (check-binding bindings)))
+	  do (check-binding binding)))
 
   (defun with-impl (bindings body)
     (if bindings
@@ -67,13 +65,13 @@ to be destroyed."
 		   (unwind-protect
 			,(with-impl (cdr bindings) body)
 		     (apply (make-with-destructor ,(car bind-vars)) ,ret-values)))))))
-	`(progn
-	   ,@body))))
+	`(locally
+	     ,@body))))
 
 (adp:defmacro with (bindings &body body)
   "This macro has the following systax:
 
-  (WITH (binding*) form*)
+  (WITH (binding*) declaration* form*)
 
   binding     ::= (var-or-vars constructor-form)
   var-or-vars ::= symbol | (symbol+)

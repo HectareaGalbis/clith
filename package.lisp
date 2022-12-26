@@ -1,5 +1,6 @@
 
 (defpackage "CLITH"
   (:use "CL" "ALEXANDRIA")
-  (:export "WITH"
-	   ""))
+  (:export "MAKE-WITH-DESTRUCTOR"
+	   "DEFINE-WITH-DESTRUCTOR"
+	   "WITH"))
