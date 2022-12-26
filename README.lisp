@@ -9,7 +9,7 @@
 
 (adp:text "Welcome to Clith!")
 
-(adp:text "This library defines the macro WITH. It is like the 'with expression' in Python but better. It allows you to create some objects, bind them to some variables, evaluate some expressions using that variables, and lastly the objects are destroyed automatically.")
+(adp:text "This library defines the macro " @f(with) ". It is like the 'with expression' in Python but better. It allows you to create some objects, bind them to some variables, evaluate some expressions using that variables, and lastly the objects are destroyed automatically.")
 
 (adp:text "A well known example is opening a file, performing some writing or reading, and closing the file. To do this using the macro " @f(with) " we must define a 'with-destructor' using " @f(define-with-destructor) ".")
 
