@@ -12,7 +12,7 @@ A well known example is opening a file\, performing some writing or reading\, an
   (PRINT "Closing a stream")
   (CLOSE SOME-STREAM))
 
-#<STANDARD-METHOD CLITH:MAKE-WITH-DESTRUCTOR (STREAM) {1004D88A63}>
+#<STANDARD-METHOD CLITH:MAKE-WITH-DESTRUCTOR (STREAM) {10026DF7A3}>
 ```
 
 Now we can use the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro\.
