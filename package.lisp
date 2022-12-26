@@ -1,6 +1,5 @@
 
-(defpackage "COLIWI"
+(defpackage "CLITH"
   (:use "CL" "ALEXANDRIA")
-  (:nicknames "CLW")
   (:export "WITH"
 	   ""))
