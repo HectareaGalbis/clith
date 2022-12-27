@@ -4,12 +4,10 @@ Welcome to Clith\!
 
 This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a>\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using that variables\, and lastly the objects are destroyed automatically\.
 
-* <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a>
 * <a href="/README.md#header:ADP:HEADERTAG0">Common Lisp wITH</a>
   * <a href="/README.md#header:ADP:HEADERTAG1">Installation</a>
   * <a href="/README.md#header:ADP:HEADERTAG2">Documentation</a>
   * <a href="/README.md#header:ADP:HEADERTAG3">A brief introduction</a>
-* <a href="/docs/guide.md#header:CLITH:CLITH-GUIDE-HEADER">The Clith guide</a>
 
 <h2 id="header:ADP:HEADERTAG1">Installation</h2>
 

@@ -11,7 +11,7 @@
 
 (adp:text "This library defines the macro " @f(with) ". It is like the 'with expression' in Python but better. It allows you to create some objects, bind them to some variables, evaluate some expressions using that variables, and lastly the objects are destroyed automatically.")
 
-(adp:table-of-contents)
+(adp:mini-table-of-contents)
 
 
 (adp:subheader "Installation")
