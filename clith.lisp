@@ -29,7 +29,8 @@
   (check-constructor-name constructor-name)
   (check-functions constructor destructor)
   (setf (get constructor-name *constructor-property*) constructor)
-  (setf (get constructor-name *destructor-property*) destructor))
+  (setf (get constructor-name *destructor-property*) destructor)
+  (values constructor-name))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -43,14 +44,16 @@
       (unless (or (symbolp (car binding))
 		  (and (listp (car binding))
 		       (every #'symbolp (car binding))))
-	(error "CLITH error: Expected a symbol or a list of symbols but ~s was found.")))
+	(error "CLITH error: The vars to be bound must be a symbol or a list of symbols but ~s was found."
+	       (car binding))))
     (let ((call-form (if (= (length binding) 1)
 			 (car binding)
 			 (cadr binding))))
       (unless (and (listp call-form)
 		   (symbolp (car call-form))
 		   (get (car call-form) *constructor-property*))
-	(error "CLITH error: ~s is not a valid WITH call form."))))
+	(error "CLITH error: ~s is not a valid constructor-form."
+	       call-form))))
 
   (defun check-bindings (bindings)
     (unless (listp bindings)
@@ -65,19 +68,22 @@
 	 (unwind-protect
 	      (multiple-value-bind ,vars (values-list ,results)
 		,@body)
-	   (apply (get ',constructor-name *destructor-property*) ,,results)))))
+	   (apply (get ',constructor-name *destructor-property*) ,results)))))
   
   (defun with-impl (bindings body)
     (if bindings
-	(let* ((vars (if (= (length (car bindings)) 1)
-			 nil
-			 (caar bindings)))
+	(let* ((var-or-vars (if (= (length (car bindings)) 1)
+				nil
+				(caar bindings)))
+	       (vars (if (symbolp var-or-vars)
+			 (list var-or-vars)
+			 var-or-vars))
 	       (call-form (if (= (length (car bindings)) 1)
 			      (caar bindings)
 			      (cadar bindings)))
 	       (constructor-name (car call-form))
 	       (args (cdr call-form)))
-	  (make-with constructor-name vars args (with-impl (cdr bindings) body)))
+	  (make-with constructor-name vars args (list (with-impl (cdr bindings) body))))
 	`(locally
 	     ,@body))))
 
@@ -95,9 +101,14 @@
   constructor-name ::= symbol
   arg              ::= form
 
-WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms.
+WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms. 
+Each constructor-name must be a symbol that was used in DEFWITH. 
 
-Each constructor-name must be a symbol that was used in DEFWITH."
+Firstly, each constructor is called with the values placed after the constructor-name. The returned values are
+used to bind the vars. vars are bound as if using MULTIPLE-VALUE-BIND. I.e. if there are more vars than values
+returned, extra values of NIL are given to the remaining vars. If there are more values than vars, the excess
+values are discarded. After these variables are bound, the forms are evaluated. Finally, each destructor is
+called with the values returned by each constructor respectively."
   (check-bindings bindings)
   (with-impl bindings body))
 
