@@ -1,2 +1,2 @@
-<h1 id="header:CLITH:CLITH-GUIDE-HEADER">The Clith guide</h1>
+<h1 id="header:CLITH:CLITH-GUIDE-HEADER">Clith guide</h1>
 

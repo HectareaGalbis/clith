@@ -26,7 +26,7 @@ After this you can install Clith using Quicklisp\:
 
 <h2 id="header:ADP:HEADERTAG2">Documentation</h2>
 
-You can read the <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a> and the <a href="/docs/guide.md#header:CLITH:CLITH-GUIDE-HEADER">The Clith guide</a>\.
+You can read the <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a> and the <a href="/docs/guide.md#header:CLITH:CLITH-GUIDE-HEADER">Clith guide</a>\.
 
 <h2 id="header:ADP:HEADERTAG3">A brief introduction</h2>
 
