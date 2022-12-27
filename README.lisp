@@ -14,13 +14,19 @@
 (adp:text "A well known example is the macro " @l(with-open-file) ". Let's define our own macro called " @f(with-my-open-file) ". It will do the same as " @l(with-open-file) " but it prints a message when the stream is about
 to be closed.")
 
-(adp:code-example
+(adp:code-block (open-file-example)
+  open-file-example)
+
+(adp:text "The first argument must be a symbol denoting the suffix of our new macro. The next arguments are the constructor and the destructor. Finally we can add a docstring to our macro.")
+
+(adp:text "The defined macro is the next one:")
+
+
+(adp:code-tag (open-file-example)
   (defwith my-open-file #'open (lambda (&rest args)
 				 (print "Closing the stream")
 				 (apply #'close args))
     "Same as OPEN-FILE"))
-
-(adp:text "The first argument must be a symbol denoting the suffix of our new macro. The next arguments are the constructor and the destructor. Finally we can add a docstring to our macro.")
 
 (adp:text "Now we can use that macro to perform our reading or writing operations:")
 

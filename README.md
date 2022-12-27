@@ -7,6 +7,18 @@ This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:
 A well known example is the macro [WITH\-OPEN\-FILE](http://www.lispworks.com/reference/HyperSpec/Body/m_w_open.htm)\. Let\'s define our own macro called <a href="/README.md#function:CLITH:WITH-MY-OPEN-FILE">CLITH::WITH-MY-OPEN-FILE</a>\. It will do the same as [WITH\-OPEN\-FILE](http://www.lispworks.com/reference/HyperSpec/Body/m_w_open.htm) but it prints a message when the stream is about
 to be closed\.
 
+`````Lisp
+(CLITH:DEFWITH MY-OPEN-FILE #'OPEN
+               (LAMBDA (&REST ARGS)
+                 (PRINT "Closing the stream")
+                 (APPLY #'CLOSE ARGS))
+               "Same as OPEN-FILE")
+`````
+
+The first argument must be a symbol denoting the suffix of our new macro\. The next arguments are the constructor and the destructor\. Finally we can add a docstring to our macro\.
+
+The defined macro is the next one\:
+
 <h4 id="function:CLITH:WITH-MY-OPEN-FILE">Macro: WITH-MY-OPEN-FILE</h4>
 
 ```Lisp
@@ -17,18 +29,6 @@ to be closed\.
 ````
 Same as OPEN-FILE
 ````
-
-```Lisp
-(CLITH:DEFWITH MY-OPEN-FILE #'OPEN
-               (LAMBDA (&REST ARGS)
-                 (PRINT "Closing the stream")
-                 (APPLY #'CLOSE ARGS))
-               "Same as OPEN-FILE")
-
-CLITH::WITH-MY-OPEN-FILE
-```
-
-The first argument must be a symbol denoting the suffix of our new macro\. The next arguments are the constructor and the destructor\. Finally we can add a docstring to our macro\.
 
 Now we can use that macro to perform our reading or writing operations\:
 
