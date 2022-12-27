@@ -30,7 +30,7 @@
 
 (adp:subheader "Documentation")
 
-(adp:text "You can read the " @h(api-reference-header) " and the " @h(clith-guide-header) ".")
+(adp:itemize (adp:item @h(api-reference-header)))
 
 
 (adp:subheader "A brief introduction")
