@@ -48,7 +48,7 @@ This macro has the following systax:
   (WITH (binding*) declaration* form*)
 
   binding            ::= (vars suffix-constructor)
-  var-or-vars        ::= symbol | (symbol*)
+  vars               ::= symbol | (symbol*)
   suffix-constructor ::= (suffix arg*)
   suffix             ::= symbol
   arg                ::= form
