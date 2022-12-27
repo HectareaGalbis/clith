@@ -4,7 +4,7 @@
 (adp:in-file #P"docs/api")
 
 
-(adp:header "Clith API reference")
+(adp:header "Clith API reference" api-reference-header)
 
 
 (adp:defmacro defwith (suffix constructor destructor &optional docstring)

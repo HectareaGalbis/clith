@@ -1,4 +1,4 @@
-<h1 id="header:ADP:HEADERTAG0">Clith API reference</h1>
+<h1 id="header:CLITH:API-REFERENCE-HEADER">Clith API reference</h1>
 
 <h4 id="function:CLITH:DEFWITH">Macro: DEFWITH</h4>
 

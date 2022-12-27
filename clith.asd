@@ -9,4 +9,5 @@
   :depends-on ("adp" "alexandria")
   :components ((:file "package")
 	       (:file "clith")
-	       (:file "README")))
+	       (:file "README")
+	       (:file "guide")))

@@ -11,7 +11,31 @@
 
 (adp:text "This library defines the macro " @f(with) ". It is like the 'with expression' in Python but better. It allows you to create some objects, bind them to some variables, evaluate some expressions using that variables, and lastly the objects are destroyed automatically.")
 
-(adp:text "A well known example is the macro " @l(with-open-file) ". Let's define our own macro called " @f(with-my-open-file) ". It will do the same as " @l(with-open-file) " but it prints a message when the stream is about
+(adp:table-of-contents)
+
+
+(adp:subheader "Installation")
+
+(adp:text "This library is available at Ultralisp. If you don't have it already, you can add it evaluating this:")
+
+(adp:verbatim-code-block "Lisp"
+  "(ql-dist:install-dist \"http://dist.ultralisp.org/\"
+			 :prompt nil)")
+
+(adp:text "After this you can install Clith using Quicklisp:")
+
+(adp:verbatim-code-block "Lisp"
+  "(ql:quickload :clith)")
+
+
+(adp:subheader "Documentation")
+
+(adp:text "You can read the " @h(api-reference-header) " and the " @h(clith-guide-header) ".")
+
+
+(adp:subheader "A brief introduction")
+
+(adp:text "Let's see how we can create a 'with macro'. A well known example is the macro " @l(with-open-file) ". Let's define our own macro called " @f(with-my-open-file) ". It will do the same as " @l(with-open-file) " but it prints a message when the stream is about
 to be closed.")
 
 (adp:code-block (open-file-example)
