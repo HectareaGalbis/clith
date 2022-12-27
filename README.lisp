@@ -11,15 +11,19 @@
 
 (adp:text "This library defines the macro " @f(with) ". It is like the 'with expression' in Python but better. It allows you to create some objects, bind them to some variables, evaluate some expressions using that variables, and lastly the objects are destroyed automatically.")
 
-(adp:text "A well known example is opening a file, performing some writing or reading, and closing the file. To do this using the macro " @f(with) " we must define a 'with-destructor' using " @f(define-with-destructor) ".")
+(adp:text "A well known example is the macro " @l(with-open-file) ". Let's define our own macro called " @f(with-my-open-file) ". It will do the same as " @l(with-open-file) " but it prints a message when the stream is about
+to be closed.")
 
 (adp:code-example
- (define-with-destructor stream (some-stream)
-   (print "Closing a stream")
-   (close some-stream)))
+  (defwith my-open-file #'open (lambda (&rest args)
+				 (print "Closing the stream")
+				 (apply #'close args))
+    "Same as OPEN-FILE"))
 
-(adp:text "Now we can use the " @f(with) " macro.")
+(adp:text "The first argument must be a symbol denoting the suffix of our new macro. The next arguments are the constructor and the destructor. Finally we can add a docstring to our macro.")
+
+(adp:text "Now we can use that macro to perform our reading or writing operations:")
 
 (adp:code-example
- (with ((file-stream (open "~/some-file.txt" :direction :output :if-does-not-exist :create :if-exists :supersede)))
-   (format file-stream "Hello clith!")))
+  (with-my-open-file file-stream (#P"~/example.txt" :direction :output :if-does-not-exist :create :if-exists :supersede)
+    (format file-stream "Hello Clith!")))

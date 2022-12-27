@@ -1,22 +1,38 @@
 <h1 id="header:ADP:HEADERTAG0">Clith API reference</h1>
 
-<h4 id="function:CLITH:MAKE-WITH-DESTRUCTOR">Generic function: MAKE-WITH-DESTRUCTOR</h4>
+<h4 id="function:CLITH:DEFWITH">Macro: DEFWITH</h4>
 
 ```Lisp
-(defgeneric CLITH:MAKE-WITH-DESTRUCTOR (OBJECT)
-  ...)
-```
-
-<h4 id="function:CLITH:DEFINE-WITH-DESTRUCTOR">Macro: DEFINE-WITH-DESTRUCTOR</h4>
-
-```Lisp
-(defmacro CLITH:DEFINE-WITH-DESTRUCTOR (CLASS LAMBDA-LIST &BODY BODY)
+(defmacro CLITH:DEFWITH (SUFFIX CONSTRUCTOR DESTRUCTOR &OPTIONAL DOCSTRING)
   ...)
 ```
 
 ````
-Syntactic sugar for defining a method for MAKE-WITH-DESTRUCTOR. The fist argument is the class of the object
-to be destroyed.
+This macro has the following syntax:
+
+  (DEFWITH suffix constructor destructor &optional docstring)
+
+  suffix      ::= An interned symbol
+  constructor ::= A form that evaluates to a function
+  destructor  ::= A form that evaluates to a function
+  docstring   ::= NIL | string
+
+Defines a new macro called WITH-suffix with DOCSTRING as documentation string. This new macro has the following
+syntax:
+
+  (WITH-suffix vars args decalration* body-expr*)
+
+  vars      ::= symbol | (symbol*)
+  args      ::= (form*)
+  body-expr ::= form
+
+This new macro binds the symbols in vars with the values returned by constructor. The constructor is called with
+the arguments in args. Then the body-exprs are evaluated. Finally, the destructor is called. The destructor will
+receive all the values returned by the constructor. 
+
+The binding of vars work the same as MULTIPLE-VALUE-BIND. If there are more vars than values returned, extra
+values of NIL are given to the remaining vars. If there are more values than vars, the excess values are
+discarded.
 ````
 
 <h4 id="function:CLITH:WITH">Macro: WITH</h4>
@@ -31,17 +47,16 @@ This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
 
-  binding     ::= (var-or-vars constructor-form)
-  var-or-vars ::= symbol | (symbol+)
-  constructor-form ::= form
+  binding            ::= (vars suffix-constructor)
+  var-or-vars        ::= symbol | (symbol*)
+  suffix-constructor ::= (suffix arg*)
+  suffix             ::= symbol
+  arg                ::= form
 
-WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms. Each
-constructor-form must return at least one object. The first object returned must be of a class type that has
-specialized the MAKE-WITH-DESTRUCTOR method. After evaluating the body forms, each value returned by the
-constructor-form is received by the destructor created by MAKE-WITH-DESTRUCTOR.
+WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms.
 
-var-or-vars indicates the symbols to be bound with the values returned by constructor-form. It works like 
-MULTIPLE-VALUE-BIND, i.e., if there are more symbols than values returned, extra values of NIL are given to the
-remaining symbols. If there are more values than symbols, the excess values are discarded.
+Each suffix must be a symbol that was used in DEFWITH to define a 'with macro'. 
+
+WITH expands to nested WITH-suffix forms.
 ````
 
