@@ -190,7 +190,7 @@ void destroyWindow(window* w, WindowFactory* factory);")
 
 (adp:text "Much better!")
 
-(adp:text "Finally, I must say that " @f(with) " already defines some 'with constructor names' like values, open, make-string-input-stream, etc. Here is a last example:")
+(adp:text "Finally, I must say that " @f(with) " already defines some 'with constructor names' like 'values', 'open', 'make-string-input-stream', etc. Here is a last example:")
 
 (adp:code-block ()
   (defwith 'debug-with

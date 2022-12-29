@@ -161,7 +161,7 @@ Now we can use the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> mac
 
 Much better\!
 
-Finally\, I must say that <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> already defines some \'with constructor names\' like values\, open\, make\-string\-input\-stream\, etc\. Here is a last example\:
+Finally\, I must say that <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> already defines some \'with constructor names\' like \'values\'\, \'open\'\, \'make\-string\-input\-stream\'\, etc\. Here is a last example\:
 
 `````Lisp
 (CLITH:DEFWITH 'DEBUG-WITH
