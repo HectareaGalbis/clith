@@ -96,7 +96,9 @@ If this form is at top-level, effects will take place at compile time."
 			      (cadar bindings)))
 	       (constructor-name (car call-form))
 	       (args (cdr call-form)))
-	  (make-with constructor-name vars args (list (with-impl (cdr bindings) body))))
+	  (if (cdr bindings)
+	      (make-with constructor-name vars args (list (with-impl (cdr bindings) body)))
+	      (make-with constructor-name vars args body)))
 	`(locally
 	     ,@body))))
 
