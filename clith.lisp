@@ -25,12 +25,25 @@
       (error "CLITH error: The object ~s is not a function."
 	     destructor)))
 
-(defun defwith (constructor-name constructor destructor)
-  (check-constructor-name constructor-name)
-  (check-functions constructor destructor)
-  (setf (get constructor-name *constructor-property*) constructor)
-  (setf (get constructor-name *destructor-property*) destructor)
-  (values constructor-name))
+(adp:defun defwith (constructor-name constructor destructor)
+  "CONSTRUCTOR-NAME must be a symbol. CONSTRUCTOR and DESTRUCTOR must be functions. DEFWITH Defines a
+constructor-name for the macro WITH. This will enable the use of a form with the syntax
+
+  (constructor-name arg*)
+
+within the WITH macro. arg* denotes the arguments that CONSTRUCTOR must receive. The DESTRUCTOR must receive the
+same number of values that CONSTRUCTOR returns.
+
+If CONSTRUCTOR-NAME had already associated a constructor and a destructor, they are replaced by CONSTRUCTOR and
+DESTRUCTOR.
+
+If this form is at top-level, effects will take place at compile time."
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (check-constructor-name constructor-name)
+    (check-functions constructor destructor)
+    (setf (get constructor-name *constructor-property*) constructor)
+    (setf (get constructor-name *destructor-property*) destructor)
+    (values constructor-name)))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

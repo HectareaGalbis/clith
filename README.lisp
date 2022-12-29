@@ -35,25 +35,159 @@
 
 (adp:subheader "A brief introduction")
 
-(adp:text "Let's see how we can create a 'with macro'. A well known example is the macro " @l(with-open-file) ". Let's define our own macro called " @f(with-my-open-file) ". It will do the same as " @l(with-open-file) " but it prints a message when the stream is about
-to be closed.")
-
-(adp:code-block (open-file-example)
-  open-file-example)
-
-(adp:text "The first argument must be a symbol denoting the suffix of our new macro. The next arguments are the constructor and the destructor. Finally we can add a docstring to our macro.")
-
-(adp:text "The defined macro is the next one:")
+(adp:text "The macro " @f(with) " is used to destroy automatically the created objects after using them. This is intended mainly for using with the Common Lisp Foreign Function Interface (CFFI). The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful.")
 
 
-(adp:code-tag (open-file-example)
-  (defwith my-open-file #'open (lambda (&rest args)
-				 (print "Closing the stream")
-				 (apply #'close args))
-    "Same as OPEN-FILE"))
+(adp:subsubheader "A simple example")
 
-(adp:text "Now we can use that macro to perform our reading or writing operations:")
+(adp:text "Suppose you have the following C functions:")
 
-(adp:code-example
-  (with-my-open-file file-stream (#P"~/example.txt" :direction :output :if-does-not-exist :create :if-exists :supersede)
-    (format file-stream "Hello Clith!")))
+(adp:verbatim-code-block "C"
+  "window* createWindow(char* name);
+
+void destroyWindow(window* w);")
+
+(adp:text "You write the following bindings:")
+
+(adp:verbatim-code-block "CommonLisp"
+  "(cffi:defcfun \"createWindow\" :pointer
+  (name :string))
+
+(cffi:defcfun \"destroyWindow\" :void
+  (w :pointer))")
+
+(adp:text "And you make the following wrapping:")
+
+(adp:code-block ()
+
+  (defun create-window (name)
+    (createWindow name))
+
+  (defun destroy-window (w)
+    (destroyWindow w)))
+
+(adp:text "The usual way to work with this functions is:")
+
+(adp:code-block (let-window)
+
+  let-window)
+
+(adp:code-tag (let-window)
+  @'((let ((window (create-window "A window")))
+       (adp:code-comment
+	   "Doing some stuff with the window"
+	 (print-something window))
+       (adp:code-comment
+	   "Closing the window"
+	 (destroy-window w)))))
+
+(adp:text "You can forget about closing the window, so we should use the " @f(with) " macro. First, we need to define a 'with constructor name' using " @f(defwith) ".")
+
+(adp:code-block ()
+
+  (defwith 'create-window #'create-window #'destroy-window))
+
+(adp:text "The first argument must be a symbol denoting the 'with constructor name'. The following two arguments are the constructor and destructor used to create and destroy the object (in this case the window) when using the " @f(with) " macro.")
+
+(adp:text "Now we can use " @f(with) ":")
+
+(adp:code-block (with-window)
+
+  with-window)
+
+(adp:code-tag (with-window)
+  @'((with ((window (create-window "A window")))
+       (adp:code-comment
+	   "Doing some stuff with the window"
+	 (print-something window)))))
+
+
+(adp:subsubheader "A more realistic example")
+
+(adp:text "Surely a binding function like CREATE-WINDOW could receive and/or return multiple values. Also, some of these values must be used also in the destructor. For example, consider the following C functions and their respective bindings and wrappings:")
+
+(adp:verbatim-code-block "C"
+  "// The new window is set to the pointer whose address is stored in w.
+// The window is created by the factory.
+int createWindow(char* name, WindowFactory* factory, Window** w);
+
+// The window must be destroyed by the same factory it was created.
+int destroyWindow(window* w, WindowFactory* factory);")
+
+(adp:verbatim-code-block "CommonLisp"
+  "(cffi:defcfun \"createWindow\" :int
+  (name :string) (factory :pointer) (w :pointer))
+
+(cffi:defcfun \"destroyWindow\" :int
+  (w :pointer) (factory :pointer))")
+
+(adp:verbatim-code-block "CommonLisp"
+  "(defun create-window (name factory)
+  (cffi:with-foreign-object (pWindow :pointer)
+    (let ((result (createWindow name factory pWindow)))
+      (values (cffi:mem-ref pWindow :pointer)
+              result))))
+
+(defun destroy-window (w factory)
+  (destroyWindow w factory))")
+
+
+(adp:text "Now suppose we have the pointer to a factory stored in the parameter *factory*. The usual way to work with a window could be:")
+
+(adp:code-block (complex-let-window)
+  complex-let-window)
+
+(adp:code-tag (complex-let-window)
+  @'((multiple-value-bind (window result) (create-window "A window" *factory*)
+       (adp:code-comment
+	   "Checking if creation was succesful"
+	 (unless (equal result 'ok)
+	   (error "Window creation failed!")))
+       (adp:code-comment
+	   "Doing some stuff with the window"
+	 (print-something window))
+       (adp:code-comment
+	   "Closing the window"
+	 (destroy-window window *factory*)))))
+
+(adp:text "Let's make a 'with constructor name'. The destructor must receive the window and the " @c("*factory*") ". In order to achieve that, the constructor must return all the values the destructor needs.")
+
+(adp:code-block (complex-defwith)
+  complex-defwith)
+
+(adp:code-tag (complex-defwith)
+  @'((defwith 'create-window
+
+      (adp:code-comment
+	  "We make a constructor that uses CREATE-WINDOW"
+	(lambda (name factory)
+	  (multiple-value-bind (window result) (create-window name factory)
+	    (adp:code-comment
+		"We return the same as the constructor plus the values the destructor needs."
+	      (values window result factory)))))
+
+      (adp:code-comment
+	  "The destructor must receive all the values returned by the constructor."
+	(lambda (window result factory)
+	  (declare (ignore result))
+	  (destroy-window window factory))))))
+
+(adp:text "Now we can use the " @f(with) " macro as in the previous simple example. Also, " @f(with) " support multiple bindings as if using " @l(multiple-value-bind) ":")
+
+(adp:code-block (complex-with-window)
+
+  complex-with-window)
+
+(adp:code-tag (complex-with-window)
+  @'((with (((window result) (create-window "A window" *factory*)))
+       (adp:code-comment
+	   "Checking if creation was succesful"
+	 (unless (equal result 'ok)
+	   (error "Window creation failed!")))
+       (adp:code-comment
+	   "Doing some stuff with the window"
+	 (print-something window)))))
+
+(adp:text "Much better!")
+
+(adp:text "Consider reading the " @h(api-reference-header) " for more information about how these macros work.")

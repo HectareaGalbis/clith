@@ -1,38 +1,25 @@
 <h1 id="header:CLITH:API-REFERENCE-HEADER">Clith API reference</h1>
 
-<h4 id="function:CLITH:DEFWITH">Macro: DEFWITH</h4>
+<h4 id="function:CLITH:DEFWITH">Function: DEFWITH</h4>
 
 ```Lisp
-(defmacro CLITH:DEFWITH (SUFFIX CONSTRUCTOR DESTRUCTOR &OPTIONAL DOCSTRING)
+(defun CLITH:DEFWITH (CONSTRUCTOR-NAME CONSTRUCTOR DESTRUCTOR)
   ...)
 ```
 
 ````
-This macro has the following syntax:
+CONSTRUCTOR-NAME must be a symbol. CONSTRUCTOR and DESTRUCTOR must be functions. DEFWITH Defines a
+constructor-name for the macro WITH. This will enable the use of a form with the syntax
 
-  (DEFWITH suffix constructor destructor &optional docstring)
+  (constructor-name arg*)
 
-  suffix      ::= An interned symbol
-  constructor ::= A form that evaluates to a function
-  destructor  ::= A form that evaluates to a function
-  docstring   ::= NIL | string
+within the WITH macro. arg* denotes the arguments that CONSTRUCTOR must receive. The DESTRUCTOR must receive the
+same number of values that CONSTRUCTOR returns.
 
-Defines a new macro called WITH-suffix with DOCSTRING as documentation string. This new macro has the following
-syntax:
+If CONSTRUCTOR-NAME had already associated a constructor and a destructor, they are replaced by CONSTRUCTOR and
+DESTRUCTOR.
 
-  (WITH-suffix vars args decalration* body-expr*)
-
-  vars      ::= symbol | (symbol*)
-  args      ::= (form*)
-  body-expr ::= form
-
-This new macro binds the symbols in vars with the values returned by constructor. The constructor is called with
-the arguments in args. Then the body-exprs are evaluated. Finally, the destructor is called. The destructor will
-receive all the values returned by the constructor. 
-
-The binding of vars work the same as MULTIPLE-VALUE-BIND. If there are more vars than values returned, extra
-values of NIL are given to the remaining vars. If there are more values than vars, the excess values are
-discarded.
+If this form is at top-level, effects will take place at compile time.
 ````
 
 <h4 id="function:CLITH:WITH">Macro: WITH</h4>
@@ -47,16 +34,19 @@ This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
 
-  binding            ::= (vars suffix-constructor)
-  vars               ::= symbol | (symbol*)
-  suffix-constructor ::= (suffix arg*)
-  suffix             ::= symbol
-  arg                ::= form
+  binding          ::= ([vars] constructor-form)
+  vars             ::= symbol | (symbol*)
+  constructor-form ::= (constructor-name arg*)
+  constructor-name ::= symbol
+  arg              ::= form
 
-WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms.
+WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms. 
+Each constructor-name must be a symbol that was used in DEFWITH. 
 
-Each suffix must be a symbol that was used in DEFWITH to define a 'with macro'. 
-
-WITH expands to nested WITH-suffix forms.
+Firstly, each constructor is called with the values placed after the constructor-name. The returned values are
+used to bind the vars. vars are bound as if using MULTIPLE-VALUE-BIND. I.e. if there are more vars than values
+returned, extra values of NIL are given to the remaining vars. If there are more values than vars, the excess
+values are discarded. After these variables are bound, the forms are evaluated. Finally, each destructor is
+called with the values returned by each constructor respectively.
 ````
 
