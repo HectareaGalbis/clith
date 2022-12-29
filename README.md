@@ -46,7 +46,7 @@ void destroyWindow(window* w);
 
 You write the following bindings\:
 
-`````CommonLisp
+`````Lisp
 (cffi:defcfun "createWindow" :pointer
   (name :string))
 
@@ -101,7 +101,7 @@ int createWindow(char* name, WindowFactory* factory, Window** w);
 void destroyWindow(window* w, WindowFactory* factory);
 `````
 
-`````CommonLisp
+`````Lisp
 (cffi:defcfun "createWindow" :int
   (name :string) (factory :pointer) (w :pointer))
 
@@ -109,7 +109,7 @@ void destroyWindow(window* w, WindowFactory* factory);
   (w :pointer) (factory :pointer))
 `````
 
-`````CommonLisp
+`````Lisp
 (defun create-window (name factory)
   (cffi:with-foreign-object (pWindow :pointer)
     (let ((result (createWindow name factory pWindow)))
@@ -176,7 +176,7 @@ Finally\, I must say that <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH<
   (VALUES "Hello Clith!" *SPECIAL-VAR2*))
 `````
 
-`````CommonLisp
+`````Lisp
 Constructor 1
 Constructor 2
 Destructor 2

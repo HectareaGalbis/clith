@@ -49,7 +49,7 @@ void destroyWindow(window* w);")
 
 (adp:text "You write the following bindings:")
 
-(adp:verbatim-code-block "CommonLisp"
+(adp:verbatim-code-block "Lisp"
   "(cffi:defcfun \"createWindow\" :pointer
   (name :string))
 
@@ -114,14 +114,14 @@ int createWindow(char* name, WindowFactory* factory, Window** w);
 // The window must be destroyed by the same factory it was created.
 void destroyWindow(window* w, WindowFactory* factory);")
 
-(adp:verbatim-code-block "CommonLisp"
+(adp:verbatim-code-block "Lisp"
   "(cffi:defcfun \"createWindow\" :int
   (name :string) (factory :pointer) (w :pointer))
 
 (cffi:defcfun \"destroyWindow\" :void
   (w :pointer) (factory :pointer))")
 
-(adp:verbatim-code-block "CommonLisp"
+(adp:verbatim-code-block "Lisp"
   "(defun create-window (name factory)
   (cffi:with-foreign-object (pWindow :pointer)
     (let ((result (createWindow name factory pWindow)))
@@ -208,7 +208,7 @@ void destroyWindow(window* w, WindowFactory* factory);")
     (doing (a lot of (stuff)))
     (values "Hello Clith!" *special-var2*)))
 
-(adp:verbatim-code-block "CommonLisp"
+(adp:verbatim-code-block "Lisp"
   "Constructor 1
 Constructor 2
 Destructor 2
