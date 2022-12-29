@@ -208,7 +208,7 @@ void destroyWindow(window* w, WindowFactory* factory);")
     (doing (a lot of (stuff)))
     (values "Hello Clith!" *special-var2*)))
 
-(adp:verbatim-code-block "Lisp"
+(adp:verbatim-code-block "Text"
   "Constructor 1
 Constructor 2
 Destructor 2

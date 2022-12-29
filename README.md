@@ -176,7 +176,7 @@ Finally\, I must say that <a href="/docs/api.md#function:CLITH:WITH">clith:with<
   (values "Hello Clith!" *special-var2*))
 `````
 
-`````Lisp
+`````Text
 Constructor 1
 Constructor 2
 Destructor 2
