@@ -1,9 +1,9 @@
 <h1 id="header:CLITH:API-REFERENCE-HEADER">Clith API reference</h1>
 
-<h4 id="function:CLITH:DEFWITH">Macro: defwith</h4>
+<h4 id="function:CLITH:DEFWITH">Macro: DEFWITH</h4>
 
 ```Lisp
-(defmacro clith:defwith (constructor-name constructor destructor)
+(DEFMACRO CLITH:DEFWITH (CONSTRUCTOR-NAME CONSTRUCTOR DESTRUCTOR)
   ...)
 ```
 
@@ -18,10 +18,17 @@ DESTRUCTOR.
 If this form is at top-level, effects will take place at compile time.
 ````
 
-<h4 id="function:CLITH:WITH">Macro: with</h4>
+<h4 id="function:CLITH:DEFINE-WITH-EXPANDER">Macro: DEFINE-WITH-EXPANDER</h4>
 
 ```Lisp
-(defmacro clith:with (bindings &body body)
+(DEFMACRO DEFINE-WITH-EXPANDER (EXPANDER-NAME ARGS BODY-ARG &BODY BODY)
+  ...)
+```
+
+<h4 id="function:CLITH:WITH">Macro: WITH</h4>
+
+```Lisp
+(DEFMACRO CLITH:WITH (BINDINGS &BODY BODY)
   ...)
 ```
 

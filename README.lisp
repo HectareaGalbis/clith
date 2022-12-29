@@ -33,9 +33,16 @@
 (adp:itemize (adp:item @h(api-reference-header)))
 
 
-(adp:subheader "A brief introduction")
+(adp:subheader "A brief guide")
 
-(adp:text "The macro " @f(with) " is used to destroy automatically the created objects after using them. This is intended mainly for using with the Common Lisp Foreign Function Interface (CFFI). The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful.")
+(adp:text "The simplest way to use " @f(with) " is like using " @l(let) " or " @l(multiple-value-bind) ":")
+
+(adp:code-example
+  (with ((x 5)
+	 ((q r) (floor 45 32)))
+    (+ x q r)))
+
+(adp:text "However, the macro " @f(with) " allows you to destroy automatically the created objects after using these objects. This is intended mainly for using with the Common Lisp Foreign Function Interface (CFFI). The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful.")
 
 
 (adp:subsubheader "A simple example")
@@ -172,7 +179,8 @@ void destroyWindow(window* w, WindowFactory* factory);")
 	  (declare (ignore result))
 	  (destroy-window window factory))))))
 
-(adp:text "Now we can use the " @f(with) " macro as in the previous simple example. Also, " @f(with) " support multiple bindings as if using " @l(multiple-value-bind) ":")
+(adp:text "Now we can use the " @f(with) " macro as in the previous simple example. Also, as I said at the
+beginning," @f(with) " support multiple bindings as if using " @l(multiple-value-bind) ":")
 
 (adp:code-block (complex-with-window)
 
@@ -190,7 +198,7 @@ void destroyWindow(window* w, WindowFactory* factory);")
 
 (adp:text "Much better!")
 
-(adp:text "Finally, I must say that " @f(with) " already defines some 'with constructor names' like 'values', 'open', 'make-string-input-stream', etc. Here is a last example:")
+(adp:text "Finally, Clith already defines some 'with constructor names' like 'open', 'make-string-input-stream', etc. Here is a last example:")
 
 (adp:code-block ()
   (defwith 'debug-with
@@ -202,7 +210,8 @@ void destroyWindow(window* w, WindowFactory* factory);")
 
   (with (((debug-with 1))
 	 ((debug-with 2))
-	 ((*special-var1* *special-var2*) (values "A string" 1234))
+	 (*special-var1* "A string")
+	 (*special-var2* 1234)
 	 ((window1 result) (create-window "A window" *factory*))
 	 (window2 (create-window "Another window" *another-factory*)))
     (doing (a lot of (stuff)))
