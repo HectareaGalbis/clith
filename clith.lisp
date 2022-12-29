@@ -58,30 +58,35 @@ If this form is at top-level, effects will take place at compile time."
 		  (and (listp (car binding))
 		       (every #'symbolp (car binding))))
 	(error "CLITH error: The vars to be bound must be a symbol or a list of symbols but ~s was found."
-	       (car binding))))
-    (let ((call-form (if (= (length binding) 1)
-			 (car binding)
-			 (cadr binding))))
-      (unless (and (listp call-form)
-		   (symbolp (car call-form))
-		   (get (car call-form) *constructor-property*))
-	(error "CLITH error: ~s is not a valid constructor-form."
-	       call-form))))
+	       (car binding)))))
 
   (defun check-bindings (bindings)
     (unless (listp bindings)
-      (error "CLITH error: Expected a list of bindings. Found: ~s"
+      (error "CLITH error: Expected a list of bindings but ~s was found."
 	     bindings))
     (loop for binding in bindings
 	  do (check-binding binding)))
 
-  (defun make-with (constructor-name vars args body)
-    (with-gensyms (results)
-      `(let ((,results (multiple-value-list (funcall (get ',constructor-name *constructor-property*) ,@args))))
-	 (unwind-protect
-	      (multiple-value-bind ,vars (values-list ,results)
-		,@body)
-	   (apply (get ',constructor-name *destructor-property*) ,results)))))
+  (defun plistp (l)
+    (or (null l)
+	(and (consp l)
+	     (plistp (cdr l)))))
+  
+  (defun make-with (vars call-form body)
+    (with-gensyms (results constructor-property)
+      `(let ((,constructor-property ,(and (plistp call-form)
+					  (symbolp (car call-form))
+					  `(get ',constructor-name *constructor-property*))))
+	 (if ,constructor-property
+	     (let ((,results (multiple-value-list (funcall (get ',constructor-name *constructor-property*) ,@args))))
+	       (unwind-protect
+		    (multiple-value-bind ,vars (values-list ,results)
+		      ,@body)
+		 (apply (get ',constructor-name *destructor-property*) ,results)))
+	     (multiple-value-bind ,vars ,call-form
+	       ,@body)))))
+
+;; Poner otra property *with-constructor* que se añada en tiempo de compilacion y se utilice para elegir como debe ser la expansion en make-with.
   
   (defun with-impl (bindings body)
     (if bindings
