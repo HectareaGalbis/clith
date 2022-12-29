@@ -98,14 +98,14 @@ Surely a binding function like CREATE\-WINDOW could receive and\/or return multi
 int createWindow(char* name, WindowFactory* factory, Window** w);
 
 // The window must be destroyed by the same factory it was created.
-int destroyWindow(window* w, WindowFactory* factory);
+void destroyWindow(window* w, WindowFactory* factory);
 `````
 
 `````CommonLisp
 (cffi:defcfun "createWindow" :int
   (name :string) (factory :pointer) (w :pointer))
 
-(cffi:defcfun "destroyWindow" :int
+(cffi:defcfun "destroyWindow" :void
   (w :pointer) (factory :pointer))
 `````
 
