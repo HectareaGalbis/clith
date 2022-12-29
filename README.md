@@ -141,8 +141,8 @@ Let\'s make a \'with constructor name\'\. The destructor must receive the window
                (LAMBDA (NAME FACTORY)
                  (MULTIPLE-VALUE-BIND (WINDOW RESULT)
                      (CREATE-WINDOW NAME FACTORY)
-                   (ADP:CODE-COMMENT "We return the same as the constructor plus the values the destructor needs."
-                     (VALUES WINDOW RESULT FACTORY))))
+                   ;; We return the same as the constructor plus the values the destructor needs.
+                   (VALUES WINDOW RESULT FACTORY)))
                ;; The destructor must receive all the values returned by the constructor.
                (LAMBDA (WINDOW RESULT FACTORY)
                  (DECLARE (IGNORE RESULT))
