@@ -7,9 +7,11 @@
 (adp:header "Clith API reference" api-reference-header)
 
 
-(defvar *constructor-property* '#:constructor-property)
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defvar *destructor-property* '#:destructor-property)
+  (defvar *with-constructor* '#:with-constructor)
+  (defvar *constructor-property* '#:constructor-property)
+  (defvar *destructor-property* '#:destructor-property))
 
 
 (defun check-constructor-name (name)
@@ -25,25 +27,24 @@
       (error "CLITH error: The object ~s is not a function."
 	     destructor)))
 
-(adp:defun defwith (constructor-name constructor destructor)
-  "CONSTRUCTOR-NAME must be a symbol. CONSTRUCTOR and DESTRUCTOR must be functions. DEFWITH Defines a
-constructor-name for the macro WITH. This will enable the use of a form with the syntax
+(adp:defmacro defwith (constructor-name constructor destructor)
+  "CONSTRUCTOR-NAME must be a symbol. CONSTRUCTOR and DESTRUCTOR must be forms that evaluate to a function.
+DEFWITH defines a way to destruct an object returned by the function CONSTRUCTOR within the WITH macro. The
+DESTRUCTOR must receive the same number of values that CONSTRUCTOR returns.
 
-  (constructor-name arg*)
-
-within the WITH macro. arg* denotes the arguments that CONSTRUCTOR must receive. The DESTRUCTOR must receive the
-same number of values that CONSTRUCTOR returns.
-
-If CONSTRUCTOR-NAME had already associated a constructor and a destructor, they are replaced by CONSTRUCTOR and
+If CONSTRUCTOR-NAME has already a constructor and a destructor, they are replaced by CONSTRUCTOR and
 DESTRUCTOR.
 
 If this form is at top-level, effects will take place at compile time."
-  (eval-when (:compile-toplevel :load-toplevel :execute)
-    (check-constructor-name constructor-name)
-    (check-functions constructor destructor)
-    (setf (get constructor-name *constructor-property*) constructor)
-    (setf (get constructor-name *destructor-property*) destructor)
-    (values constructor-name)))
+  (check-constructor-name constructor-name)
+  (once-only (constructor destructor)
+    `(progn
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+	 (setf (get ',constructor-name *with-constructor*) t))
+       (check-functions ,constructor ,destructor)
+       (setf (get ',constructor-name *constructor-property*) ,constructor)
+       (setf (get ',constructor-name *destructor-property*) ,destructor)
+       (values ',constructor-name))))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -73,20 +74,21 @@ If this form is at top-level, effects will take place at compile time."
 	     (plistp (cdr l)))))
   
   (defun make-with (vars call-form body)
-    (with-gensyms (results constructor-property)
-      `(let ((,constructor-property ,(and (plistp call-form)
-					  (symbolp (car call-form))
-					  `(get ',constructor-name *constructor-property*))))
-	 (if ,constructor-property
-	     (let ((,results (multiple-value-list (funcall (get ',constructor-name *constructor-property*) ,@args))))
-	       (unwind-protect
-		    (multiple-value-bind ,vars (values-list ,results)
-		      ,@body)
-		 (apply (get ',constructor-name *destructor-property*) ,results)))
-	     (multiple-value-bind ,vars ,call-form
-	       ,@body)))))
+    (let ((with-constructor-p (and (plistp call-form)
+				   (symbolp (car call-form))
+				   (get (car call-form) *with-constructor*))))
+      (if with-constructor-p
+	  (let ((constructor-name (car call-form))
+		(args (cdr call-form)))
+	    (with-gensyms (results)
+	      `(let ((,results (multiple-value-list (funcall (get ',constructor-name *constructor-property*) ,@args))))
+		 (unwind-protect
+		      (multiple-value-bind ,vars (values-list ,results)
+			,@body)
+		   (apply (get ',constructor-name *destructor-property*) ,results)))))
+	  `(multiple-value-bind ,vars ,call-form
+	     ,@body))))
 
-;; Poner otra property *with-constructor* que se añada en tiempo de compilacion y se utilice para elegir como debe ser la expansion en make-with.
   
   (defun with-impl (bindings body)
     (if bindings
@@ -98,17 +100,13 @@ If this form is at top-level, effects will take place at compile time."
 			 var-or-vars))
 	       (call-form (if (= (length (car bindings)) 1)
 			      (caar bindings)
-			      (cadar bindings)))
-	       (constructor-name (car call-form))
-	       (args (cdr call-form)))
+			      (cadar bindings))))
 	  (if (cdr bindings)
-	      (make-with constructor-name vars args (list (with-impl (cdr bindings) body)))
-	      (make-with constructor-name vars args body)))
+	      (make-with vars call-form (list (with-impl (cdr bindings) body)))
+	      (make-with vars call-form body)))
 	`(locally
 	     ,@body))))
 
-
-;; Explicar mejor
 
 (adp:defmacro with (bindings &body body)
   "This macro has the following systax:

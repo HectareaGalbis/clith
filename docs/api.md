@@ -1,22 +1,18 @@
 <h1 id="header:CLITH:API-REFERENCE-HEADER">Clith API reference</h1>
 
-<h4 id="function:CLITH:DEFWITH">Function: defwith</h4>
+<h4 id="function:CLITH:DEFWITH">Macro: defwith</h4>
 
 ```Lisp
-(defun clith:defwith (constructor-name constructor destructor)
+(defmacro clith:defwith (constructor-name constructor destructor)
   ...)
 ```
 
 ````
-CONSTRUCTOR-NAME must be a symbol. CONSTRUCTOR and DESTRUCTOR must be functions. DEFWITH Defines a
-constructor-name for the macro WITH. This will enable the use of a form with the syntax
+CONSTRUCTOR-NAME must be a symbol. CONSTRUCTOR and DESTRUCTOR must be forms that evaluate to a function.
+DEFWITH defines a way to destruct an object returned by the function CONSTRUCTOR within the WITH macro. The
+DESTRUCTOR must receive the same number of values that CONSTRUCTOR returns.
 
-  (constructor-name arg*)
-
-within the WITH macro. arg* denotes the arguments that CONSTRUCTOR must receive. The DESTRUCTOR must receive the
-same number of values that CONSTRUCTOR returns.
-
-If CONSTRUCTOR-NAME had already associated a constructor and a destructor, they are replaced by CONSTRUCTOR and
+If CONSTRUCTOR-NAME has already a constructor and a destructor, they are replaced by CONSTRUCTOR and
 DESTRUCTOR.
 
 If this form is at top-level, effects will take place at compile time.
