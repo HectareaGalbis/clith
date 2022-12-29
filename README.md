@@ -161,5 +161,29 @@ Now we can use the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> mac
 
 Much better\!
 
+Finally\, I must say that <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> already defines some \'with constructor names\' like VALUES\, OPEN\, MAKE\-STRING\-INPUT\-STREAM\, etc\. Here is a last example\:
+
+`````Lisp
+(CLITH:DEFWITH 'DEBUG-WITH
+               (LAMBDA (VALUE) (FORMAT "Constructor ~s" VALUE) VALUE)
+               (LAMBDA (VALUE) (FORMAT "Destructor ~s" VALUE)))
+
+(CLITH:WITH (((DEBUG-WITH 1)) ((DEBUG-WITH 2))
+             ((*SPECIAL-VAR1* *SPECIAL-VAR2*) (VALUES "A string" 1234))
+             ((WINDOW1 RESULT) (CREATE-WINDOW "A window" *FACTORY*))
+             (WINDOW2 (CREATE-WINDOW "Another window" *ANOTHER-FACTORY*)))
+  (DOING (A LOT OF (STUFF)))
+  (VALUES "Hello Clith!" *SPECIAL-VAR2*))
+`````
+
+`````CommonLisp
+Constructor 1
+Constructor 2
+Destructor 2
+Destructor 1
+"Hello Clith!"
+1234
+`````
+
 Consider reading the <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a> for more information about how these macros work\.
 

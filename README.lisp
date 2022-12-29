@@ -190,4 +190,30 @@ void destroyWindow(window* w, WindowFactory* factory);")
 
 (adp:text "Much better!")
 
+(adp:text "Finally, I must say that " @f(with) " already defines some 'with constructor names' like VALUES, OPEN, MAKE-STRING-INPUT-STREAM, etc. Here is a last example:")
+
+(adp:code-block ()
+  (defwith 'debug-with
+      (lambda (value)
+	(format "Constructor ~s" value)
+	value)
+    (lambda (value)
+      (format "Destructor ~s" value)))
+
+  (with (((debug-with 1))
+	 ((debug-with 2))
+	 ((*special-var1* *special-var2*) (values "A string" 1234))
+	 ((window1 result) (create-window "A window" *factory*))
+	 (window2 (create-window "Another window" *another-factory*)))
+    (doing (a lot of (stuff)))
+    (values "Hello Clith!" *special-var2*)))
+
+(adp:verbatim-code-block "CommonLisp"
+  "Constructor 1
+Constructor 2
+Destructor 2
+Destructor 1
+\"Hello Clith!\"
+1234")
+
 (adp:text "Consider reading the " @h(api-reference-header) " for more information about how these macros work.")

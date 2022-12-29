@@ -2,6 +2,9 @@
 (in-package :clith)
 
 
+(defwith 'values #'values #'values)
+
+
 (defmacro defwith-streams (&rest names)
   (let ((defwith-forms (mapcar (lambda (name)
 				 `(defwith ',name #',name #'close))
