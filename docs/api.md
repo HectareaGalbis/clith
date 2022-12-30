@@ -63,6 +63,6 @@ values are discarded. After these variables are bound, the forms are evaluated. 
 called with the values returned by each constructor respectively.
 
 Each expander is expanded like a macro does. They will receive the args plus the body forms of the WITH macro.
-Its expansion is what the WITH macro will expand for.
+Its expansion is what the WITH macro will expand to.
 ````
 
