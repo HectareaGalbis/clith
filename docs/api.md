@@ -1,9 +1,9 @@
 <h1 id="header:CLITH:API-REFERENCE-HEADER">Clith API reference</h1>
 
-<h4 id="function:CLITH:DEFWITH">Macro: DEFWITH</h4>
+<h4 id="function:CLITH:DEFWITH">Macro: defwith</h4>
 
 ```Lisp
-(DEFMACRO CLITH:DEFWITH (CONSTRUCTOR-NAME CONSTRUCTOR DESTRUCTOR)
+(defmacro clith:defwith (constructor-name constructor destructor)
   ...)
 ```
 
@@ -18,11 +18,11 @@ DESTRUCTOR.
 If this form is at top-level, effects will take place at compile time.
 ````
 
-<h4 id="function:CLITH:DEFINE-WITH-EXPANDER">Macro: DEFINE-WITH-EXPANDER</h4>
+<h4 id="function:CLITH:DEFINE-WITH-EXPANDER">Macro: define-with-expander</h4>
 
 ```Lisp
-(DEFMACRO CLITH:DEFINE-WITH-EXPANDER (EXPANDER-NAME DESTRUCTURING-LAMBDA-LIST
-                                      &BODY BODY)
+(defmacro clith:define-with-expander (expander-name destructuring-lambda-list
+                                      &body body)
   ...)
 ```
 
@@ -32,10 +32,10 @@ Defines an expander for the WITH macro called EXPANDER-NAME. The DESTRUCTURING-L
 return the form that the WITH macro will expand to.
 ````
 
-<h4 id="function:CLITH:WITH">Macro: WITH</h4>
+<h4 id="function:CLITH:WITH">Macro: with</h4>
 
 ```Lisp
-(DEFMACRO CLITH:WITH (BINDINGS &BODY BODY)
+(defmacro clith:with (bindings &body body)
   ...)
 ```
 
