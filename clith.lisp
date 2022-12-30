@@ -159,20 +159,26 @@ return the form that the WITH macro will expand to."
 
   (WITH (binding*) declaration* form*)
 
-  binding          ::= ([vars] constructor-form)
+  binding          ::= ([vars] constructor-form) | (expander-form)
   vars             ::= symbol | (symbol*)
   constructor-form ::= (constructor-name arg*)
+  expander-form    ::= (expander-name arg*)
   constructor-name ::= symbol
+  expander-name    ::= symbol
   arg              ::= form
 
 WITH binds some variables like LET does, but it destroys the bound objects after evaluating the body forms. 
-Each constructor-name must be a symbol that was used in DEFWITH. 
+Each constructor-name must be a symbol that was used in DEFWITH. The same goes to expander-name that must be a
+symbol used in DEFINE-WITH-EXPANDER. 
 
-Firstly, each constructor is called with the values placed after the constructor-name. The returned values are
-used to bind the vars. vars are bound as if using MULTIPLE-VALUE-BIND. I.e. if there are more vars than values
+Each constructor is called with the values placed after the constructor-name. The returned values are used to
+bind the vars. vars are bound as if using MULTIPLE-VALUE-BIND. I.e. if there are more vars than values
 returned, extra values of NIL are given to the remaining vars. If there are more values than vars, the excess
-values are discarded. After these variables are bound, the forms are evaluated. Finally, each destructor is
-called with the values returned by each constructor respectively."
+values are discarded. After these variables are bound, the forms are evaluated. At the end, each destructor is
+called with the values returned by each constructor respectively.
+
+Each expander is expanded like a macro does. They will receive the args plus the body forms of the WITH macro.
+Its expansion is what the WITH macro will expand for."
   (check-bindings bindings)
   (with-impl bindings body))
 
