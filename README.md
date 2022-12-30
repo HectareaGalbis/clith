@@ -172,7 +172,9 @@ beginning\,<a href="/docs/api.md#function:CLITH:WITH">clith:with</a> support mul
 
 Much better\!
 
-Finally\, Clith already defines some \'with constructor names\' like \'open\'\, \'make\-string\-input\-stream\'\, etc\. Here is a last example\:
+Finally\, Clith already defines some \'with constructor names\' like \'open\'\, \'make\-string\-input\-stream\'\, etc\.
+
+Here is an example where you can see what the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro can do \(yet there is more\)\:
 
 `````Lisp
 (clith:defwith debug-with

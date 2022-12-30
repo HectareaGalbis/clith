@@ -198,7 +198,9 @@ beginning," @f(with) " support multiple bindings as if using " @l(multiple-value
 
 (adp:text "Much better!")
 
-(adp:text "Finally, Clith already defines some 'with constructor names' like 'open', 'make-string-input-stream', etc. Here is a last example:")
+(adp:text "Finally, Clith already defines some 'with constructor names' like 'open', 'make-string-input-stream', etc.")
+
+(adp:text "Here is an example where you can see what the " @f(with) " macro can do (yet there is more):")
 
 (adp:code-block ()
   (defwith debug-with
