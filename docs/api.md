@@ -21,9 +21,16 @@ If this form is at top-level, effects will take place at compile time.
 <h4 id="function:CLITH:DEFINE-WITH-EXPANDER">Macro: DEFINE-WITH-EXPANDER</h4>
 
 ```Lisp
-(DEFMACRO DEFINE-WITH-EXPANDER (EXPANDER-NAME ARGS BODY-ARG &BODY BODY)
+(DEFMACRO CLITH:DEFINE-WITH-EXPANDER (EXPANDER-NAME DESTRUCTURING-LAMBDA-LIST
+                                      &BODY BODY)
   ...)
 ```
+
+````
+Defines an expander for the WITH macro called EXPANDER-NAME. The DESTRUCTURING-LAMBDA-LIST must receive a
+&body or &rest argument. That argument will be the body forms used within the WITH macro. The expander must
+return the form that the WITH macro will expand to.
+````
 
 <h4 id="function:CLITH:WITH">Macro: WITH</h4>
 

@@ -45,7 +45,7 @@
 (adp:text "However, the macro " @f(with) " allows you to destroy automatically the created objects after using these objects. This is intended mainly for using with the Common Lisp Foreign Function Interface (CFFI). The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful.")
 
 
-(adp:subsubheader "A simple example")
+(adp:subsubheader "With and Defwith macros")
 
 (adp:text "Suppose you have the following C functions:")
 
@@ -109,7 +109,7 @@ void destroyWindow(window* w);")
 	 (print-something window)))))
 
 
-(adp:subsubheader "A more realistic example")
+(adp:subsubheader "More about Defwith")
 
 (adp:text "Surely a binding function like CREATE-WINDOW could receive and/or return multiple values. Also, some of these values must be used also in the destructor. For example, consider the following C functions and their respective bindings and wrappings:")
 
@@ -225,4 +225,45 @@ Destructor 1
 \"Hello Clith!\"
 1234")
 
-(adp:text "Consider reading the " @h(api-reference-header) " for more information about how these macros work.")
+
+(adp:subsubheader "Define-with-expander macro")
+
+(adp:text "Sometimes a constructor and a destructor is not enough. Maybe you want to enclose the body forms of
+the WITH macro within a closure or a specific macro. Let's see how we can achieve this using the last macro of
+this library: " @f(define-with-expander) ".")
+
+(adp:text "Suppose you have a macro defined like this:")
+
+(adp:code-example
+  (defmacro with-special-bindings (&body body)
+    `(let ((*animal* "Dog") (*speed* 8))
+       (declare (special *animal* *speed*))
+       ,@body)))
+
+(adp:text "You can use this macro as expected:")
+
+(adp:code-example
+  (with-special-bindings
+      (format t "The ~a goes at ~sKm/h speed."
+	      *animal* *speed*)))
+
+(adp:text "However you want to use this in the WITH macro. The solution goes to define a 'with expander'.")
+
+(adp:code-example
+  (define-with-expander special-bindings (&body body)
+    `(let ((*animal* "Dog") (*speed* 8))
+       (declare (special *animal* *speed*))
+       ,@body)))
+
+(adp:text "Done! Note that this macro works the same as " @l(defmacro) " (almost). Now we can use this in the
+WITH macro:")
+
+(adp:code-example
+  (with (((special-bindings)))
+    (format t "The ~a goes at ~sKm/h speed."
+	    *animal* *speed*)))
+
+(adp:text "Nice!")
+
+
+

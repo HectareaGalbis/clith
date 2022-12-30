@@ -8,8 +8,9 @@ This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:
   * <a href="/README.md#header:ADP:HEADERTAG1">Installation</a>
   * <a href="/README.md#header:ADP:HEADERTAG2">Documentation</a>
   * <a href="/README.md#header:ADP:HEADERTAG3">A brief guide</a>
-    * <a href="/README.md#header:ADP:HEADERTAG4">A simple example</a>
-    * <a href="/README.md#header:ADP:HEADERTAG5">A more realistic example</a>
+    * <a href="/README.md#header:ADP:HEADERTAG4">With and Defwith macros</a>
+    * <a href="/README.md#header:ADP:HEADERTAG5">More about Defwith</a>
+    * <a href="/README.md#header:ADP:HEADERTAG6">Define-with-expander macro</a>
 
 <h2 id="header:ADP:HEADERTAG1">Installation</h2>
 
@@ -43,7 +44,7 @@ The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a
 
 However\, the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> allows you to destroy automatically the created objects after using these objects\. This is intended mainly for using with the Common Lisp Foreign Function Interface \(CFFI\)\. The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful\.
 
-<h3 id="header:ADP:HEADERTAG4">A simple example</h3>
+<h3 id="header:ADP:HEADERTAG4">With and Defwith macros</h3>
 
 Suppose you have the following C functions\:
 
@@ -97,7 +98,7 @@ Now we can use <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a>\:
   (PRINT-SOMETHING WINDOW))
 `````
 
-<h3 id="header:ADP:HEADERTAG5">A more realistic example</h3>
+<h3 id="header:ADP:HEADERTAG5">More about Defwith</h3>
 
 Surely a binding function like CREATE\-WINDOW could receive and\/or return multiple values\. Also\, some of these values must be used also in the destructor\. For example\, consider the following C functions and their respective bindings and wrappings\:
 
@@ -195,5 +196,53 @@ Destructor 1
 1234
 `````
 
-Consider reading the <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a> for more information about how these macros work\.
+<h3 id="header:ADP:HEADERTAG6">Define-with-expander macro</h3>
+
+Sometimes a constructor and a destructor is not enough\. Maybe you want to enclose the body forms of
+the WITH macro within a closure or a specific macro\. Let\'s see how we can achieve this using the last macro of
+this library\: <a href="/docs/api.md#function:CLITH:DEFINE-WITH-EXPANDER">CLITH:DEFINE-WITH-EXPANDER</a>\.
+
+Suppose you have a macro defined like this\:
+
+```Lisp
+(DEFMACRO WITH-SPECIAL-BINDINGS (&BODY BODY)
+  `(LET ((*ANIMAL* "Dog") (*SPEED* 8))
+     (DECLARE (SPECIAL *ANIMAL* *SPEED*))
+     ,@BODY))
+
+CLITH::WITH-SPECIAL-BINDINGS
+```
+
+You can use this macro as expected\:
+
+```Lisp
+(WITH-SPECIAL-BINDINGS
+  (FORMAT T "The ~a goes at ~sKm/h speed." *ANIMAL* *SPEED*))
+The Dog goes at 8Km/h speed.
+NIL
+```
+
+However you want to use this in the WITH macro\. The solution goes to define a \'with expander\'\.
+
+```Lisp
+(CLITH:DEFINE-WITH-EXPANDER SPECIAL-BINDINGS
+    (&BODY BODY)
+  `(LET ((*ANIMAL* "Dog") (*SPEED* 8))
+     (DECLARE (SPECIAL *ANIMAL* *SPEED*))
+     ,@BODY))
+
+CLITH::SPECIAL-BINDINGS
+```
+
+Done\! Note that this macro works the same as [DEFMACRO](http://www.lispworks.com/reference/HyperSpec/Body/m_defmac.htm) \(almost\)\. Now we can use this in the
+WITH macro\:
+
+```Lisp
+(CLITH:WITH (((SPECIAL-BINDINGS)))
+  (FORMAT T "The ~a goes at ~sKm/h speed." *ANIMAL* *SPEED*))
+The Dog goes at 8Km/h speed.
+NIL
+```
+
+Nice\!
 

@@ -14,7 +14,8 @@
   (defvar *destructor-property* '#:destructor-property)
 
   (defvar *with-expander* '#:with-expander)
-  (defvar *expander-property* '#:expander-property)
+  (defvar *lambda-list-property* '#:lambda-list-property)
+  (defvar *body-property* '#:body-property)
 
   (defun check-constructor-name (name)
     (unless (symbolp name)
@@ -46,7 +47,8 @@ If this form is at top-level, effects will take place at compile time."
     `(progn
        (eval-when (:compile-toplevel :load-toplevel :execute)
 	 (remprop ',constructor-name *with-expander*)
-	 (remprop ',constructor-name *expander-property*)
+	 (remprop ',constructor-name *lambda-list-property*)
+	 (remprop ',constructor-name *body-property*)
 	 (setf (get ',constructor-name *with-constructor*) t))
        (check-functions ,constructor ,destructor)
        (setf (get ',constructor-name *constructor-property*) ,constructor)
@@ -62,32 +64,22 @@ If this form is at top-level, effects will take place at compile time."
 	     name))
     (when (get name *with-constructor*)
       (warn "CLITH warning: Redefining the 'with constructor' ~s as a 'with expander'."
-	    name)))
+	    name))))
 
-  (defun check-args (args)
-    (unless (and (listp args)
-		 (every #'symbolp args))
-      (error "CLITH error: Expected a list of symbols but ~s was found."
-	     args)))
-
-  (defun check-body-arg (body-arg)
-    (unless (symbolp body-arg)
-      (error "CLITH error: Expected a symbol but ~s was found."
-	     body-arg))))
-
-(adp:defmacro define-with-expander (expander-name args body-arg &body body)
+(adp:defmacro define-with-expander (expander-name destructuring-lambda-list &body body)
+  "Defines an expander for the WITH macro called EXPANDER-NAME. The DESTRUCTURING-LAMBDA-LIST must receive a
+&body or &rest argument. That argument will be the body forms used within the WITH macro. The expander must
+return the form that the WITH macro will expand to."
   (check-expander-name expander-name)
-  (check-args args)
-  (check-body-arg body-arg)
   `(progn
      (eval-when (:compile-toplevel :load-toplevel :execute)
        (remprop ',expander-name *with-constructor*)
        (remprop ',expander-name *constructor-property*)
        (remprop ',expander-name *destructor-property*)
-       (setf (get ',expander-name *with-constructor*) t)
-       (setf (get ',expander-name *expander-property*) '#1=#:with-expander))
-     (defmacro #1# (,args &body ,body-arg)
-       ,@body)))
+       (setf (get ',expander-name *with-expander*) t)
+       (setf (get ',expander-name *lambda-list-property*) ',destructuring-lambda-list)
+       (setf (get ',expander-name *body-property*) ',body))
+     (values ',expander-name)))
 
 
 
@@ -135,9 +127,10 @@ If this form is at top-level, effects will take place at compile time."
 			  ,@body)
 		     (apply (get ',constructor-name *destructor-property*) ,results))))))
 	(with-expander-p
-	    (let ((constructor-name (car call-form))
+	    (let ((expander-name (car call-form))
 		  (args (cdr call-form)))
-	      `(,(get constructor-name *expander-property*) ,args ,@body)))
+	      (eval `(destructuring-bind ,(get expander-name *lambda-list-property*) ',(append args body)
+		       ,@(get expander-name *body-property*)))))
 	(t
 	 `(multiple-value-bind ,vars ,call-form
 	    ,@body)))))
