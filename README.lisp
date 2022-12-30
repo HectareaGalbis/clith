@@ -229,7 +229,7 @@ Destructor 1
 (adp:subsubheader "Define-with-expander macro")
 
 (adp:text "Sometimes a constructor and a destructor is not enough. Maybe you want to enclose the body forms of
-the WITH macro within a closure or a specific macro. Let's see how we can achieve this using the last macro of
+the " @f(with) " macro within a closure or a specific macro. Let's see how we can achieve this using the last macro of
 this library: " @f(define-with-expander) ".")
 
 (adp:text "Suppose you have a macro defined like this:")

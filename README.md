@@ -199,7 +199,7 @@ Destructor 1
 <h3 id="header:ADP:HEADERTAG6">Define-with-expander macro</h3>
 
 Sometimes a constructor and a destructor is not enough\. Maybe you want to enclose the body forms of
-the WITH macro within a closure or a specific macro\. Let\'s see how we can achieve this using the last macro of
+the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro within a closure or a specific macro\. Let\'s see how we can achieve this using the last macro of
 this library\: <a href="/docs/api.md#function:CLITH:DEFINE-WITH-EXPANDER">clith:define-with-expander</a>\.
 
 Suppose you have a macro defined like this\:
