@@ -85,7 +85,7 @@ The usual way to work with this functions is\:
 You can forget about closing the window\, so we should use the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\. First\, we need to define a \'with constructor name\' using <a href="/docs/api.md#function:CLITH:DEFWITH">clith:defwith</a>\.
 
 `````Lisp
-(clith:defwith 'create-window #'create-window #'destroy-window)
+(clith:defwith create-window #'create-window #'destroy-window)
 `````
 
 The first argument must be a symbol denoting the \'with constructor name\'\. The following two arguments are the constructor and destructor used to create and destroy the object \(in this case the window\) when using the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\.
@@ -146,7 +146,7 @@ Now suppose we have the pointer to a factory stored in the parameter \*factory\*
 Let\'s make a \'with constructor name\'\. The destructor must receive the window and the ``` *factory* ```\. In order to achieve that\, the constructor must return all the values the destructor needs\.
 
 `````Lisp
-(clith:defwith 'create-window
+(clith:defwith create-window
                ;; We make a constructor that uses CREATE-WINDOW
                (lambda (name factory)
                  (multiple-value-bind (window result)
@@ -175,7 +175,7 @@ Much better\!
 Finally\, Clith already defines some \'with constructor names\' like \'open\'\, \'make\-string\-input\-stream\'\, etc\. Here is a last example\:
 
 `````Lisp
-(clith:defwith 'debug-with
+(clith:defwith debug-with
                (lambda (value) (format "Constructor ~s" value) value)
                (lambda (value) (format "Destructor ~s" value)))
 
@@ -222,7 +222,7 @@ The Dog goes at 8Km/h speed.
 nil
 ```
 
-However you want to use this in the WITH macro\. The solution goes to define a \'with expander\'\.
+However you want to use this in the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\. The solution goes to define a \'with expander\'\.
 
 ```Lisp
 (clith:define-with-expander special-bindings
@@ -235,7 +235,7 @@ clith::special-bindings
 ```
 
 Done\! Note that this macro works the same as [defmacro](http://www.lispworks.com/reference/HyperSpec/Body/m_defmac.htm) \(almost\)\. Now we can use this in the
-WITH macro\:
+<a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\:
 
 ```Lisp
 (clith:with (((special-bindings)))

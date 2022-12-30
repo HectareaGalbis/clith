@@ -92,7 +92,7 @@ void destroyWindow(window* w);")
 
 (adp:code-block ()
 
-  (defwith 'create-window #'create-window #'destroy-window))
+  (defwith create-window #'create-window #'destroy-window))
 
 (adp:text "The first argument must be a symbol denoting the 'with constructor name'. The following two arguments are the constructor and destructor used to create and destroy the object (in this case the window) when using the " @f(with) " macro.")
 
@@ -163,7 +163,7 @@ void destroyWindow(window* w, WindowFactory* factory);")
   complex-defwith)
 
 (adp:code-tag (complex-defwith)
-  @'((defwith 'create-window
+  @'((defwith create-window
 
       (adp:code-comment
 	  "We make a constructor that uses CREATE-WINDOW"
@@ -201,7 +201,7 @@ beginning," @f(with) " support multiple bindings as if using " @l(multiple-value
 (adp:text "Finally, Clith already defines some 'with constructor names' like 'open', 'make-string-input-stream', etc. Here is a last example:")
 
 (adp:code-block ()
-  (defwith 'debug-with
+  (defwith debug-with
       (lambda (value)
 	(format "Constructor ~s" value)
 	value)
@@ -247,7 +247,7 @@ this library: " @f(define-with-expander) ".")
       (format t "The ~a goes at ~sKm/h speed."
 	      *animal* *speed*)))
 
-(adp:text "However you want to use this in the WITH macro. The solution goes to define a 'with expander'.")
+(adp:text "However you want to use this in the " @f(with) " macro. The solution goes to define a 'with expander'.")
 
 (adp:code-example
   (define-with-expander special-bindings (&body body)
@@ -256,7 +256,7 @@ this library: " @f(define-with-expander) ".")
        ,@body)))
 
 (adp:text "Done! Note that this macro works the same as " @l(defmacro) " (almost). Now we can use this in the
-WITH macro:")
+" @f(with) " macro:")
 
 (adp:code-example
   (with (((special-bindings)))
