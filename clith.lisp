@@ -95,7 +95,11 @@ return the form that the WITH macro will expand to."
 		  (and (listp (car binding))
 		       (every #'symbolp (car binding))))
 	(error "CLITH error: The vars to be bound must be a symbol or a list of symbols but ~s was found."
-	       (car binding)))))
+	       (car binding)))
+      (when (and (listp (cadr binding))
+		 (get (caadr binding) *with-expander*))
+	(error "CLITH error: An expander form cannot bind any variables but ~s was found."
+	       binding))))
 
   (defun check-bindings (bindings)
     (unless (listp bindings)
