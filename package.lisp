@@ -7,4 +7,7 @@
 	   "SYMBOL-WITH-DESTRUCTOR"
 	   "DEFINE-WITH-EXPANDER"
 	   "WITH-EXPANDER-P"
-	   "WITH"))
+	   "WITH"
+	   "AS"
+	   "IN"
+	   "ACROSS"))

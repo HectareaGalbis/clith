@@ -140,7 +140,7 @@ associated to the \'with constructor\.\'
   (open "~/file.txt" :direction :output :if-does-not-exist :create :if-exists
         :supersede))
 
-(clith:with ((stream (as open (custom-open))))
+(clith:with ((stream (clith:as open (custom-open))))
   (format stream "Hey!"))
 `````
 
@@ -149,7 +149,7 @@ associated to the \'with constructor\.\'
 It expects a list\. The binding symbol represents each element of the list\.
 
 ```Lisp
-(clith:with ((x (in '(1 2 3 4))))
+(clith:with ((x (clith:in '(1 2 3 4))))
   (print x))
 
 1 
@@ -164,7 +164,7 @@ nil
 Same IN\, but it expects a vector\.
 
 ```Lisp
-(clith:with ((x (across #(1 2 3 4))))
+(clith:with ((x (clith:across #(1 2 3 4))))
   (print x))
 
 1 
