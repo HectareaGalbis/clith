@@ -129,22 +129,7 @@ Its expansion is what the WITH macro will expand to.
 
 <h2 id="header:ADP:HEADERTAG4">Predefined 'with expanders'</h2>
 
-<h3 id="header:ADP:HEADERTAG5">As</h3>
-
-It expects a \'with constructor\' and forms that return the same as the constructor associated to said
-\'with constructor\'\. After the WITH macro ends\, the values returned by that forms are passed to the destructor
-associated to the \'with constructor\.\'
-
-`````Lisp
-(defun custom-open ()
-  (open "~/file.txt" :direction :output :if-does-not-exist :create :if-exists
-        :supersede))
-
-(clith:with ((stream (clith:as open (custom-open))))
-  (format stream "Hey!"))
-`````
-
-<h3 id="header:ADP:HEADERTAG6">In</h3>
+<h3 id="header:ADP:HEADERTAG5">In</h3>
 
 It expects a list\. The binding symbol represents each element of the list\.
 
@@ -159,7 +144,7 @@ It expects a list\. The binding symbol represents each element of the list\.
 nil
 ```
 
-<h3 id="header:ADP:HEADERTAG7">Across</h3>
+<h3 id="header:ADP:HEADERTAG6">Across</h3>
 
 Same IN\, but it expects a vector\.
 

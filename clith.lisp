@@ -241,28 +241,6 @@ Its expansion is what the WITH macro will expand to."
 
 (adp:subheader "Predefined 'with expanders'")
 
-(adp:subsubheader "As")
-
-(define-with-expander as (vars with-body constructor-name &body body)
-  (check-symbol-constructor-name constructor-name)
-  (with-gensyms (results)
-    `(let ((,results (multiple-value-list (progn ,@body))))
-       (unwind-protect
-	    (multiple-value-bind ,vars (values-list ,results)
-	      ,@with-body)
-	 (apply (get ',constructor-name *destructor-property*) ,results)))))
-
-(adp:text "It expects a 'with constructor' and forms that return the same as the constructor associated to said
-'with constructor'. After the WITH macro ends, the values returned by that forms are passed to the destructor
-associated to the 'with constructor.'")
-
-(adp:code-block ()
-  (defun custom-open ()
-    (open "~/file.txt" :direction :output :if-does-not-exist :create :if-exists :supersede))
-  (with ((stream (as open
-		     (custom-open))))
-    (format stream "Hey!")))
-
 (adp:subsubheader "In")
 
 (define-with-expander in (vars with-body list)

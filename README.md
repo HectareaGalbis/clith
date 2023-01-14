@@ -1,18 +1,18 @@
-<h1 id="header:ADP:HEADERTAG8">Common Lisp wITH</h1>
+<h1 id="header:ADP:HEADERTAG7">Common Lisp wITH</h1>
 
 Welcome to Clith\!
 
 This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">clith:with</a>\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using that variables\, and lastly the objects are destroyed automatically\.
 
-* <a href="/README.md#header:ADP:HEADERTAG8">Common Lisp wITH</a>
-  * <a href="/README.md#header:ADP:HEADERTAG9">Installation</a>
-  * <a href="/README.md#header:ADP:HEADERTAG10">Documentation</a>
-  * <a href="/README.md#header:ADP:HEADERTAG11">A brief guide</a>
-    * <a href="/README.md#header:ADP:HEADERTAG12">With and Defwith macros</a>
-    * <a href="/README.md#header:ADP:HEADERTAG13">More about Defwith</a>
-    * <a href="/README.md#header:ADP:HEADERTAG14">Define-with-expander macro</a>
+* <a href="/README.md#header:ADP:HEADERTAG7">Common Lisp wITH</a>
+  * <a href="/README.md#header:ADP:HEADERTAG8">Installation</a>
+  * <a href="/README.md#header:ADP:HEADERTAG9">Documentation</a>
+  * <a href="/README.md#header:ADP:HEADERTAG10">A brief guide</a>
+    * <a href="/README.md#header:ADP:HEADERTAG11">With and Defwith macros</a>
+    * <a href="/README.md#header:ADP:HEADERTAG12">More about Defwith</a>
+    * <a href="/README.md#header:ADP:HEADERTAG13">Define-with-expander macro</a>
 
-<h2 id="header:ADP:HEADERTAG9">Installation</h2>
+<h2 id="header:ADP:HEADERTAG8">Installation</h2>
 
 This library is available at Ultralisp\. If you don\'t have it already\, you can add it evaluating this\:
 
@@ -27,11 +27,11 @@ After this you can install Clith using Quicklisp\:
 (ql:quickload :clith)
 `````
 
-<h2 id="header:ADP:HEADERTAG10">Documentation</h2>
+<h2 id="header:ADP:HEADERTAG9">Documentation</h2>
 
 * <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a>
 
-<h2 id="header:ADP:HEADERTAG11">A brief guide</h2>
+<h2 id="header:ADP:HEADERTAG10">A brief guide</h2>
 
 The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> is like using [let](http://www.lispworks.com/reference/HyperSpec/Body/s_let_l.htm) or [multiple\-value\-bind](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
 
@@ -44,7 +44,7 @@ The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">clith:with</a
 
 However\, the macro <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> allows you to destroy automatically the created objects after using these objects\. This is intended mainly for using with the Common Lisp Foreign Function Interface \(CFFI\)\. The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful\.
 
-<h3 id="header:ADP:HEADERTAG12">With and Defwith macros</h3>
+<h3 id="header:ADP:HEADERTAG11">With and Defwith macros</h3>
 
 Suppose you have the following C functions\:
 
@@ -98,7 +98,7 @@ Now we can use <a href="/docs/api.md#function:CLITH:WITH">clith:with</a>\:
   (print-something window))
 `````
 
-<h3 id="header:ADP:HEADERTAG13">More about Defwith</h3>
+<h3 id="header:ADP:HEADERTAG12">More about Defwith</h3>
 
 Surely a binding function like CREATE\-WINDOW could receive and\/or return multiple values\. Also\, some of these values must be used also in the destructor\. For example\, consider the following C functions and their respective bindings and wrappings\:
 
@@ -198,7 +198,7 @@ Destructor 1
 1234
 `````
 
-<h3 id="header:ADP:HEADERTAG14">Define-with-expander macro</h3>
+<h3 id="header:ADP:HEADERTAG13">Define-with-expander macro</h3>
 
 Sometimes a constructor and a destructor is not enough\. Maybe you want to enclose the body forms of
 the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro within a closure or a specific macro\. Let\'s see how we can achieve this using the last macro of
