@@ -1,18 +1,18 @@
-<h1 id="header:ADP:HEADERTAG0">Common Lisp wITH</h1>
+<h1 id="header:ADP:HEADERTAG8">Common Lisp wITH</h1>
 
 Welcome to Clith\!
 
-This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">clith:with</a>\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using that variables\, and lastly the objects are destroyed automatically\.
+This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a>\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using that variables\, and lastly the objects are destroyed automatically\.
 
-* <a href="/README.md#header:ADP:HEADERTAG0">Common Lisp wITH</a>
-  * <a href="/README.md#header:ADP:HEADERTAG1">Installation</a>
-  * <a href="/README.md#header:ADP:HEADERTAG2">Documentation</a>
-  * <a href="/README.md#header:ADP:HEADERTAG3">A brief guide</a>
-    * <a href="/README.md#header:ADP:HEADERTAG4">With and Defwith macros</a>
-    * <a href="/README.md#header:ADP:HEADERTAG5">More about Defwith</a>
-    * <a href="/README.md#header:ADP:HEADERTAG6">Define-with-expander macro</a>
+* <a href="/README.md#header:ADP:HEADERTAG8">Common Lisp wITH</a>
+  * <a href="/README.md#header:ADP:HEADERTAG9">Installation</a>
+  * <a href="/README.md#header:ADP:HEADERTAG10">Documentation</a>
+  * <a href="/README.md#header:ADP:HEADERTAG11">A brief guide</a>
+    * <a href="/README.md#header:ADP:HEADERTAG12">With and Defwith macros</a>
+    * <a href="/README.md#header:ADP:HEADERTAG13">More about Defwith</a>
+    * <a href="/README.md#header:ADP:HEADERTAG14">Define-with-expander macro</a>
 
-<h2 id="header:ADP:HEADERTAG1">Installation</h2>
+<h2 id="header:ADP:HEADERTAG9">Installation</h2>
 
 This library is available at Ultralisp\. If you don\'t have it already\, you can add it evaluating this\:
 
@@ -27,24 +27,24 @@ After this you can install Clith using Quicklisp\:
 (ql:quickload :clith)
 `````
 
-<h2 id="header:ADP:HEADERTAG2">Documentation</h2>
+<h2 id="header:ADP:HEADERTAG10">Documentation</h2>
 
 * <a href="/docs/api.md#header:CLITH:API-REFERENCE-HEADER">Clith API reference</a>
 
-<h2 id="header:ADP:HEADERTAG3">A brief guide</h2>
+<h2 id="header:ADP:HEADERTAG11">A brief guide</h2>
 
-The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> is like using [let](http://www.lispworks.com/reference/HyperSpec/Body/s_let_l.htm) or [multiple\-value\-bind](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
+The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> is like using [LET](http://www.lispworks.com/reference/HyperSpec/Body/s_let_l.htm) or [MULTIPLE\-VALUE\-BIND](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
 
 ```Lisp
-(clith:with ((x 5) ((q r) (floor 45 32)))
-  (+ x q r))
+(CLITH:WITH ((X 5) ((Q R) (FLOOR 45 32)))
+  (+ X Q R))
 
 19
 ```
 
-However\, the macro <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> allows you to destroy automatically the created objects after using these objects\. This is intended mainly for using with the Common Lisp Foreign Function Interface \(CFFI\)\. The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful\.
+However\, the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> allows you to destroy automatically the created objects after using these objects\. This is intended mainly for using with the Common Lisp Foreign Function Interface \(CFFI\)\. The C language coninuously allocates and deallocates memory so a WITH macro can be very helpful\.
 
-<h3 id="header:ADP:HEADERTAG4">With and Defwith macros</h3>
+<h3 id="header:ADP:HEADERTAG12">With and Defwith macros</h3>
 
 Suppose you have the following C functions\:
 
@@ -67,38 +67,38 @@ You write the following bindings\:
 And you make the following wrapping\:
 
 `````Lisp
-(defun create-window (name) (createwindow name))
+(DEFUN CREATE-WINDOW (NAME) (CREATEWINDOW NAME))
 
-(defun destroy-window (w) (destroywindow w))
+(DEFUN DESTROY-WINDOW (W) (DESTROYWINDOW W))
 `````
 
 The usual way to work with this functions is\:
 
 `````Lisp
-(let ((window (create-window "A window")))
+(LET ((WINDOW (CREATE-WINDOW "A window")))
   ;; Doing some stuff with the window
-  (print-something window)
+  (PRINT-SOMETHING WINDOW)
   ;; Closing the window
-  (destroy-window w))
+  (DESTROY-WINDOW W))
 `````
 
-You can forget about closing the window\, so we should use the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\. First\, we need to define a \'with constructor name\' using <a href="/docs/api.md#function:CLITH:DEFWITH">clith:defwith</a>\.
+You can forget about closing the window\, so we should use the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro\. First\, we need to define a \'with constructor name\' using <a href="/docs/api.md#function:CLITH:DEFWITH">CLITH:DEFWITH</a>\.
 
 `````Lisp
-(clith:defwith create-window #'create-window #'destroy-window)
+(CLITH:DEFWITH CREATE-WINDOW #'CREATE-WINDOW #'DESTROY-WINDOW)
 `````
 
-The first argument must be a symbol denoting the \'with constructor name\'\. The following two arguments are the constructor and destructor used to create and destroy the object \(in this case the window\) when using the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\.
+The first argument must be a symbol denoting the \'with constructor name\'\. The following two arguments are the constructor and destructor used to create and destroy the object \(in this case the window\) when using the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro\.
 
-Now we can use <a href="/docs/api.md#function:CLITH:WITH">clith:with</a>\:
+Now we can use <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a>\:
 
 `````Lisp
-(clith:with ((window (create-window "A window")))
+(CLITH:WITH ((WINDOW (CREATE-WINDOW "A window")))
   ;; Doing some stuff with the window
-  (print-something window))
+  (PRINT-SOMETHING WINDOW))
 `````
 
-<h3 id="header:ADP:HEADERTAG5">More about Defwith</h3>
+<h3 id="header:ADP:HEADERTAG13">More about Defwith</h3>
 
 Surely a binding function like CREATE\-WINDOW could receive and\/or return multiple values\. Also\, some of these values must be used also in the destructor\. For example\, consider the following C functions and their respective bindings and wrappings\:
 
@@ -133,60 +133,60 @@ void destroyWindow(window* w, WindowFactory* factory);
 Now suppose we have the pointer to a factory stored in the parameter \*factory\*\. The usual way to work with a window could be\:
 
 `````Lisp
-(multiple-value-bind (window result)
-    (create-window "A window" *factory*)
+(MULTIPLE-VALUE-BIND (WINDOW RESULT)
+    (CREATE-WINDOW "A window" *FACTORY*)
   ;; Checking if creation was succesful
-  (unless (equal result 'ok) (error "Window creation failed!"))
+  (UNLESS (EQUAL RESULT 'OK) (ERROR "Window creation failed!"))
   ;; Doing some stuff with the window
-  (print-something window)
+  (PRINT-SOMETHING WINDOW)
   ;; Closing the window
-  (destroy-window window *factory*))
+  (DESTROY-WINDOW WINDOW *FACTORY*))
 `````
 
 Let\'s make a \'with constructor name\'\. The destructor must receive the window and the ``` *factory* ```\. In order to achieve that\, the constructor must return all the values the destructor needs\.
 
 `````Lisp
-(clith:defwith create-window
+(CLITH:DEFWITH CREATE-WINDOW
                ;; We make a constructor that uses CREATE-WINDOW
-               (lambda (name factory)
-                 (multiple-value-bind (window result)
-                     (create-window name factory)
+               (LAMBDA (NAME FACTORY)
+                 (MULTIPLE-VALUE-BIND (WINDOW RESULT)
+                     (CREATE-WINDOW NAME FACTORY)
                    ;; We return the same as the constructor plus the values the destructor needs.
-                   (values window result factory)))
+                   (VALUES WINDOW RESULT FACTORY)))
                ;; The destructor must receive all the values returned by the constructor.
-               (lambda (window result factory)
-                 (declare (ignore result))
-                 (destroy-window window factory)))
+               (LAMBDA (WINDOW RESULT FACTORY)
+                 (DECLARE (IGNORE RESULT))
+                 (DESTROY-WINDOW WINDOW FACTORY)))
 `````
 
-Now we can use the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro as in the previous simple example\. Also\, as I said at the
-beginning\,<a href="/docs/api.md#function:CLITH:WITH">clith:with</a> support multiple bindings as if using [multiple\-value\-bind](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
+Now we can use the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro as in the previous simple example\. Also\, as I said at the
+beginning\,<a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> support multiple bindings as if using [MULTIPLE\-VALUE\-BIND](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
 
 `````Lisp
-(clith:with (((window result) (create-window "A window" *factory*)))
+(CLITH:WITH (((WINDOW RESULT) (CREATE-WINDOW "A window" *FACTORY*)))
   ;; Checking if creation was succesful
-  (unless (equal result 'ok) (error "Window creation failed!"))
+  (UNLESS (EQUAL RESULT 'OK) (ERROR "Window creation failed!"))
   ;; Doing some stuff with the window
-  (print-something window))
+  (PRINT-SOMETHING WINDOW))
 `````
 
 Much better\!
 
 Finally\, Clith already defines some \'with constructor names\' like \'open\'\, \'make\-string\-input\-stream\'\, etc\.
 
-Here is an example where you can see what the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro can do \(yet there is more\)\:
+Here is an example where you can see what the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro can do \(yet there is more\)\:
 
 `````Lisp
-(clith:defwith debug-with
-               (lambda (value) (format "Constructor ~s" value) value)
-               (lambda (value) (format "Destructor ~s" value)))
+(CLITH:DEFWITH DEBUG-WITH
+               (LAMBDA (VALUE) (FORMAT "Constructor ~s" VALUE) VALUE)
+               (LAMBDA (VALUE) (FORMAT "Destructor ~s" VALUE)))
 
-(clith:with (((debug-with 1)) ((debug-with 2)) (*special-var1* "A string")
-             (*special-var2* 1234)
-             ((window1 result) (create-window "A window" *factory*))
-             (window2 (create-window "Another window" *another-factory*)))
-  (doing (a lot of (stuff)))
-  (values "Hello Clith!" *special-var2*))
+(CLITH:WITH (((DEBUG-WITH 1)) ((DEBUG-WITH 2)) (*SPECIAL-VAR1* "A string")
+             (*SPECIAL-VAR2* 1234)
+             ((WINDOW1 RESULT) (CREATE-WINDOW "A window" *FACTORY*))
+             (WINDOW2 (CREATE-WINDOW "Another window" *ANOTHER-FACTORY*)))
+  (DOING (A LOT OF (STUFF)))
+  (VALUES "Hello Clith!" *SPECIAL-VAR2*))
 `````
 
 `````Text
@@ -198,52 +198,53 @@ Destructor 1
 1234
 `````
 
-<h3 id="header:ADP:HEADERTAG6">Define-with-expander macro</h3>
+<h3 id="header:ADP:HEADERTAG14">Define-with-expander macro</h3>
 
 Sometimes a constructor and a destructor is not enough\. Maybe you want to enclose the body forms of
-the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro within a closure or a specific macro\. Let\'s see how we can achieve this using the last macro of
-this library\: <a href="/docs/api.md#function:CLITH:DEFINE-WITH-EXPANDER">clith:define-with-expander</a>\.
+the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro within a closure or a specific macro\. Let\'s see how we can achieve this using the last macro of
+this library\: <a href="/docs/api.md#function:CLITH:DEFINE-WITH-EXPANDER">CLITH:DEFINE-WITH-EXPANDER</a>\.
 
 Suppose you have a macro defined like this\:
 
 ```Lisp
-(defmacro with-special-bindings (&body body)
-  `(let ((*animal* "Dog") (*speed* 8))
-     (declare (special *animal* *speed*))
-     ,@body))
+(DEFMACRO WITH-SPECIAL-BINDINGS (&BODY BODY)
+  `(LET ((*ANIMAL* "Dog") (*SPEED* 8))
+     (DECLARE (SPECIAL *ANIMAL* *SPEED*))
+     ,@BODY))
 
-clith::with-special-bindings
+CLITH::WITH-SPECIAL-BINDINGS
 ```
 
 You can use this macro as expected\:
 
 ```Lisp
-(with-special-bindings
-  (format t "The ~a goes at ~sKm/h speed." *animal* *speed*))
+(WITH-SPECIAL-BINDINGS
+  (FORMAT T "The ~a goes at ~sKm/h speed." *ANIMAL* *SPEED*))
 The Dog goes at 8Km/h speed.
-nil
+NIL
 ```
 
-However you want to use this in the <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\. The solution goes to define a \'with expander\'\.
+However you want to use this in the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro\. The solution goes to define a \'with expander\'\.
 
 ```Lisp
-(clith:define-with-expander special-bindings
-    (&body body)
-  `(let ((*animal* "Dog") (*speed* 8))
-     (declare (special *animal* *speed*))
-     ,@body))
+(CLITH:DEFINE-WITH-EXPANDER SPECIAL-BINDINGS
+    (VARS WITH-BODY)
+  (DECLARE (IGNORE VARS))
+  `(LET ((*ANIMAL* "Dog") (*SPEED* 8))
+     (DECLARE (SPECIAL *ANIMAL* *SPEED*))
+     ,@WITH-BODY))
 
-clith::special-bindings
+CLITH::SPECIAL-BINDINGS
 ```
 
-Done\! Note that this macro works the same as [defmacro](http://www.lispworks.com/reference/HyperSpec/Body/m_defmac.htm) \(almost\)\. Now we can use this in the
-<a href="/docs/api.md#function:CLITH:WITH">clith:with</a> macro\:
+Done\! Note that this macro works the same as [DEFMACRO](http://www.lispworks.com/reference/HyperSpec/Body/m_defmac.htm) \(almost\)\. It must receive at least two
+argumetns representing the binding symbol list and the body forms from within the <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> macro\. Now we can use it\.
 
 ```Lisp
-(clith:with (((special-bindings)))
-  (format t "The ~a goes at ~sKm/h speed." *animal* *speed*))
+(CLITH:WITH (((SPECIAL-BINDINGS)))
+  (FORMAT T "The ~a goes at ~sKm/h speed." *ANIMAL* *SPEED*))
 The Dog goes at 8Km/h speed.
-nil
+NIL
 ```
 
 Nice\!

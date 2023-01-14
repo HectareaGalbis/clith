@@ -252,13 +252,14 @@ this library: " @f(define-with-expander) ".")
 (adp:text "However you want to use this in the " @f(with) " macro. The solution goes to define a 'with expander'.")
 
 (adp:code-example
-  (define-with-expander special-bindings (&body body)
+  (define-with-expander special-bindings (vars with-body)
+    (declare (ignore vars))
     `(let ((*animal* "Dog") (*speed* 8))
        (declare (special *animal* *speed*))
-       ,@body)))
+       ,@with-body)))
 
-(adp:text "Done! Note that this macro works the same as " @l(defmacro) " (almost). Now we can use this in the
-" @f(with) " macro:")
+(adp:text "Done! Note that this macro works the same as " @l(defmacro) " (almost). It must receive at least two
+argumetns representing the binding symbol list and the body forms from within the " @f(with) " macro. Now we can use it.")
 
 (adp:code-example
   (with (((special-bindings)))
