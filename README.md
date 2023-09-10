@@ -2,7 +2,7 @@
 
 Welcome to Clith\!
 
-This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a>\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using that variables\, and lastly the objects are destroyed automatically\. Even more\, you can bind functions like LABELS does and nest expressions like UIOP\:NEST\.
+This library defines the macro <a href="/docs/api.md#function:CLITH:WITH">clith:with</a>\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using that variables\, and lastly the objects are destroyed automatically\. Even more\, you can bind functions like LABELS does and nest expressions like UIOP\:NEST\.
 
 * <a href="/README.md#header:ADP:HEADERTAG3">Common Lisp wITH</a>
   * <a href="/README.md#header:ADP:HEADERTAG4">Installation</a>
@@ -30,11 +30,11 @@ After this you can install Clith using Quicklisp\:
 
 <h2 id="header:ADP:HEADERTAG6">A brief guide</h2>
 
-The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a> is like using [LET](http://www.lispworks.com/reference/HyperSpec/Body/s_let_l.htm) or [MULTIPLE\-VALUE\-BIND](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
+The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">clith:with</a> is like using [let](http://www.lispworks.com/reference/HyperSpec/Body/s_let_l.htm) or [multiple\-value\-bind](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
 
 ```Lisp
-(CLITH:WITH ((X 5) ((Q R) (FLOOR 45 32)))
-  (+ X Q R))
+(clith:with ((x 5) ((q r) (floor 45 32)))
+  (+ x q r))
 
 19
 ```
@@ -42,52 +42,52 @@ The simplest way to use <a href="/docs/api.md#function:CLITH:WITH">CLITH:WITH</a
 But you can also bind functions\:
 
 ```Lisp
-(CLITH:WITH ((HELLO (NAME) (FORMAT T "~%Hello ~a!" NAME)))
-  (HELLO "there"))
+(clith:with ((hello (name) (format t "~%Hello ~a!" name)))
+  (hello "there"))
 
 Hello there!
-NIL
+nil
 ```
 
 Or nest other expressions\. This can be useful when using other with\- macros\:
 
 `````Lisp
-(CLITH:WITH ((WITH-OPEN-FILE (FILE "~/my-file.txt")))
-  (PRINT (READ FILE)))
+(clith:with ((with-open-file (file "~/my-file.txt")))
+  (print (read file)))
 `````
 
 And\, of course\, you can mix it all up\.
 
 ```Lisp
-(CLITH:WITH ((N 10) (ADD2 (A B) (+ A B)) ((WITH-OUTPUT-TO-STRING (STR))))
-  (FORMAT STR "The result is ~a" (ADD2 10 N)))
+(clith:with ((n 10) (add2 (a b) (+ a b)) ((with-output-to-string (str))))
+  (format str "The result is ~a" (add2 10 n)))
 
 "The result is 20"
 ```
 
-The bound variables are destroyed automatically at the end of WITH\. More precisely\, the generic function <a href="/docs/api.md#function:CLITH:DESTROYER">CLITH:DESTROYER</a> is called for almost all bound variables\. Variables bound by a LET\-like binding clause will be destroyed always\. However\, only the first bound variable within a MULTIPLE\-VALUE\-BIND\-like form will be destroyed\.
+The bound variables are destroyed automatically at the end of WITH\. More precisely\, the generic function <a href="/docs/api.md#function:CLITH:DESTROYER">clith:destroyer</a> is called for almost all bound variables\. Variables bound by a LET\-like binding clause will be destroyed always\. However\, only the first bound variable within a MULTIPLE\-VALUE\-BIND\-like form will be destroyed\.
 
 `````Lisp
-(CLITH:WITH ((N 10) ((A B) (VALUES 1 2)))
-  (PRINT N))
+(clith:with ((n 10) ((a b) (values 1 2)))
+  (print n))
 `````
 
 Expands to\:
 
 `````Lisp
-(LET* ((N 10))
-  (UNWIND-PROTECT
-      (MULTIPLE-VALUE-BIND (A B)
-          (VALUES 1 2)
-        (UNWIND-PROTECT (PROGN (PRINT N)) (CLITH:DESTROYER A)))
-    (PROGN (CLITH:DESTROYER N))))
+(let* ((n 10))
+  (unwind-protect
+      (multiple-value-bind (a b)
+          (values 1 2)
+        (unwind-protect (progn (print n)) (clith:destroyer a)))
+    (progn (clith:destroyer n))))
 `````
 
 Observe that only N and A are destroyed\.
 
-The function <a href="/docs/api.md#function:CLITH:DESTROYER">CLITH:DESTROYER</a> is already defined for stream objects\. In fact\, this is the implementation of the method you can find in the source code\.
+The function <a href="/docs/api.md#function:CLITH:DESTROYER">clith:destroyer</a> is already defined for stream objects\. In fact\, this is the implementation of the method you can find in the source code\.
 
 `````Lisp
-(DEFMETHOD CLITH:DESTROYER ((OBJ STREAM)) "Closes a stream." (CLOSE OBJ))
+(defmethod clith:destroyer ((obj stream)) "Closes a stream." (close obj))
 `````
 
