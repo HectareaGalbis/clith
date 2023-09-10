@@ -1,13 +1,5 @@
 
 (defpackage "CLITH"
   (:use "CL" "ALEXANDRIA")
-  (:export "DEFWITH"
-	   "WITH-CONSTRUCTOR-P"
-	   "SYMBOL-WITH-CONSTRUCTOR"
-	   "SYMBOL-WITH-DESTRUCTOR"
-	   "DEFINE-WITH-EXPANDER"
-	   "WITH-EXPANDER-P"
-	   "WITH"
-	   "AS"
-	   "IN"
-	   "ACROSS"))
+  (:export "WITH"
+	   "DESTROYER"))

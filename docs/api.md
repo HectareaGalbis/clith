@@ -2,19 +2,19 @@
 
 <h2 id="header:ADP:HEADERTAG0">DESTROYER</h2>
 
-<h4 id="function:CLITH:DESTROYER">Generic function: destroyer</h4>
+<h4 id="function:CLITH:DESTROYER">Generic function: DESTROYER</h4>
 
 ```Lisp
-(defgeneric destroyer (obj)
+(DEFGENERIC CLITH:DESTROYER (OBJ)
   ...)
 ```
 
 <h2 id="header:ADP:HEADERTAG1">With</h2>
 
-<h4 id="function:CLITH:WITH">Macro: with</h4>
+<h4 id="function:CLITH:WITH">Macro: WITH</h4>
 
 ```Lisp
-(defmacro clith:with (bindings &body body)
+(DEFMACRO CLITH:WITH (BINDINGS &BODY BODY)
   ...)
 ```
 
@@ -115,10 +115,10 @@ Artificial example computing fibonacci numbers:
 
 <h2 id="header:ADP:HEADERTAG2">Predefined 'DESTROYERS'</h2>
 
-<h4>Method: destroyer</h4>
+<h4>Method: DESTROYER</h4>
 
 ```Lisp
-(defmethod destroyer ((obj stream))
+(DEFMETHOD CLITH:DESTROYER ((OBJ STREAM))
   ...)
 ```
 
