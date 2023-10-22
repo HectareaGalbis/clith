@@ -1,5 +1,5 @@
 
-(defpackage "CLITH"
-  (:use "CL" "ALEXANDRIA")
-  (:export "WITH"
-	   "DESTROYER"))
+(defpackage #:clith
+  (:use #:cl #:alexandria)
+  (:export #:with
+	   #:destroyer))

@@ -1,12 +1,6 @@
 
-(in-package "CLITH")
+(in-package #:clith)
 
-(adp:in-file #P"docs/api")
-
-
-(adp:header "Clith API reference" api-reference-header)
-
-(adp:subheader "DESTROYER")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -15,7 +9,7 @@
   (defvar *body-property* '#:body-property))
 
 
-(adp:defgeneric destroyer (obj)
+(defgeneric destroyer (obj)
   (:documentation
    "Destructs an object bound by a LET*-like or MULTIPLE-VALUE-BIND-like form at the end of a WITH macro call.")
   (:method (obj)
@@ -307,9 +301,6 @@
                 ,@body)))))))
 
 
-(adp:subheader "With")
-
-
 ;; Each binding can be:
 ;; A symbol: Then it works like (let* (symbol) ...)
 ;; A list with one element. It works like (uiop:nest element (progn ...))
@@ -322,7 +313,7 @@
 ;; When saying they had a pet, show the installation code.
 ;; When WITH is saying its first words, show the equivalent LET*, MULTIPLE-VALUE-BIND and UIOP:NEST code but with WITH.
 
-(adp:defmacro with (bindings &body body)
+(defmacro with (bindings &body body)
   "This macro has the following systax:
 
   (WITH (binding*) declaration expr*)
@@ -428,8 +419,6 @@ Artificial example computing fibonacci numbers:
       (make-with-form bindings real-body extracted-declarations body-declarations))))
 
 
-(adp:subheader "Predefined 'DESTROYERS'")
-
-(adp:defmethod destroyer ((obj stream))
+(defmethod destroyer ((obj stream))
   "Closes a stream."
   (close obj))

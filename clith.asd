@@ -1,12 +1,13 @@
 
-(asdf:defsystem "clith"
-  :depends-on ("adp" "alexandria")
+(defsystem "clith"
+  :depends-on ("alexandria")
   :components ((:file "package")
 	       (:file "clith")))
 
 
-(asdf:defsystem "clith/docs"
-  :depends-on ("adp" "alexandria")
-  :components ((:file "package")
-	       (:file "clith")
-	       (:file "README")))
+(defsystem "clith/docs"
+  :defsystem-depends-on ("adp-github")
+  :build-operation "adp-github-op"
+  :depends-on ("clith")
+  :components ((:scribble "reference")
+               (:scribble "README")))
