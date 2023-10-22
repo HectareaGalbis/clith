@@ -23,9 +23,11 @@ This macro has the following systax:
   labels-form              ::= (func lambda-list expr+) 
   var                      ::= symbol
 
-WITH is a combination of LET*, MULTIPLE-VALUE-BIND, UIOP:NEST and LABELS. It can bind variables, functions and nest expressions.
+WITH is a combination of LET*, MULTIPLE-VALUE-BIND, UIOP:NEST and LABELS. It can bind variables, functions and
+ nest expressions.
 
-WITH accepts a list of binding clauses. Each binding clause must be a symbol or a list. Depending of what the clause is, WITH's behaeviour is different:
+WITH accepts a list of binding clauses. Each binding clause must be a symbol or a list. Depending of what the
+clause is, WITH's behaeviour is different:
   - A symbol: Works like LET*.
       
       (with (x)
