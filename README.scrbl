@@ -9,21 +9,6 @@ This library defines the macro @fref[clith:with]. It is like the 'with expressio
 
 @mini-table-of-contents[]
 
-@subheader{Installation}
-
-This library is available at Ultralisp. If you don't have it already, you can add it evaluating this:
-
-@code-block[:lang "common-lisp"]{
-(ql-dist:install-dist "http://dist.ultralisp.org/"
-	              :prompt nil)
-}
-
-After this you can install Clith using Quicklisp:
-
-@code-block[:lang "common-lisp"]{
-(ql:quickload :clith)
-}
-
 @subheader{Documentation}
 
 @itemize[

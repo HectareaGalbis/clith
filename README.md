@@ -1,39 +1,22 @@
-<a id="header-adp-github-headertag614"></a>
+<a id="header-adp-github-headertag694"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/reference.md#function-clith-with)\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\. Even more\, you can bind functions like LABELS does and nest expressions like UIOP\:NEST\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag614)
-  * [Installation](/README.md#header-adp-github-headertag615)
-  * [Documentation](/README.md#header-adp-github-headertag616)
-  * [A brief guide](/README.md#header-adp-github-headertag617)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag694)
+  * [Documentation](/README.md#header-adp-github-headertag695)
+  * [A brief guide](/README.md#header-adp-github-headertag696)
 
 
-<a id="header-adp-github-headertag615"></a>
-## Installation
-
-This library is available at Ultralisp\. If you don\'t have it already\, you can add it evaluating this\:
-
-`````common-lisp
-(ql-dist:install-dist "http://dist.ultralisp.org/"
-                      :prompt nil)
-`````
-
-After this you can install Clith using Quicklisp\:
-
-`````common-lisp
-(ql:quickload :clith)
-`````
-
-<a id="header-adp-github-headertag616"></a>
+<a id="header-adp-github-headertag695"></a>
 ## Documentation
 
 * [Reference](/docs/reference.md#header-adp-github-reference)
 
 
-<a id="header-adp-github-headertag617"></a>
+<a id="header-adp-github-headertag696"></a>
 ## A brief guide
 
 The simplest way to use [clith\:with](/docs/reference.md#function-clith-with) is like using LET or MULTIPLE\-VALUE\-BIND\:
