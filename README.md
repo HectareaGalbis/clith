@@ -1,17 +1,17 @@
-<a id="header-adp-github-headertag662"></a>
+<a id="header-adp-github-headertag614"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/reference.md#function-clith-with)\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\. Even more\, you can bind functions like LABELS does and nest expressions like UIOP\:NEST\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag662)
-  * [Installation](/README.md#header-adp-github-headertag663)
-  * [Documentation](/README.md#header-adp-github-headertag664)
-  * [A brief guide](/README.md#header-adp-github-headertag665)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag614)
+  * [Installation](/README.md#header-adp-github-headertag615)
+  * [Documentation](/README.md#header-adp-github-headertag616)
+  * [A brief guide](/README.md#header-adp-github-headertag617)
 
 
-<a id="header-adp-github-headertag663"></a>
+<a id="header-adp-github-headertag615"></a>
 ## Installation
 
 This library is available at Ultralisp\. If you don\'t have it already\, you can add it evaluating this\:
@@ -27,13 +27,13 @@ After this you can install Clith using Quicklisp\:
 (ql:quickload :clith)
 `````
 
-<a id="header-adp-github-headertag664"></a>
+<a id="header-adp-github-headertag616"></a>
 ## Documentation
 
 * [Reference](/docs/reference.md#header-adp-github-reference)
 
 
-<a id="header-adp-github-headertag665"></a>
+<a id="header-adp-github-headertag617"></a>
 ## A brief guide
 
 The simplest way to use [clith\:with](/docs/reference.md#function-clith-with) is like using LET or MULTIPLE\-VALUE\-BIND\:
@@ -42,9 +42,6 @@ The simplest way to use [clith\:with](/docs/reference.md#function-clith-with) is
 (clith:with ((x 5)
              ((q r) (floor 45 32)))
   (+ x q r))
-`````
-`````text
-
 `````
 `````common-lisp
 19
@@ -81,9 +78,6 @@ And\, of course\, you can mix it all up\.
              ((with-output-to-string (str))))
   (format str "The result is ~a" (add2 10 n)))
 `````
-`````text
-
-`````
 `````common-lisp
 "The result is 20"
 `````
@@ -113,8 +107,8 @@ Observe that only ``` N ``` and ``` A ``` are destroyed\.
 
 The function [clith\:destroyer](/docs/reference.md#function-clith-destroyer) is already defined for stream objects\. In fact\, this is the implementation of the method you can find in the source code\.
 
-`````(defmethod destroyer ((obj stream))
-
+`````common-lisp
+(defmethod destroyer ((obj stream))
   "Closes a stream."
   (close obj))
 `````

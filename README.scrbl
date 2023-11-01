@@ -90,7 +90,7 @@ Observe that only @code{N} and @code{A} are destroyed.
 
 The function @fref[clith:destroyer] is already defined for stream objects. In fact, this is the implementation of the method you can find in the source code.
 
-@code-block[:lang]{
+@code-block[:lang "common-lisp"]{
 (defmethod destroyer ((obj stream))
   "Closes a stream."
   (close obj))
