@@ -325,9 +325,9 @@ clause is, WITH's behaeviour is different:
         (print k))
 
       --- Expands to ---
-      (UIOP/UTILITY:NEST X 
-                         (LET ((K 5))) 
-                         (PROGN (PRINT K)))
+      (uiop/utility:nest x 
+                         (let ((k 5))) 
+                         (progn (print k)))
 
   - A list with two elements: Works like LET* or MULTIPLE-VALUE-BIND. Also, the function DESTROYER is called
     with the bound variables at the end of the WITH macro. Using the MULTIPLE-VALUE-BIND form will result in
