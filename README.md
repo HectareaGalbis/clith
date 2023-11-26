@@ -1,22 +1,23 @@
-<a id="header-adp-github-headertag693"></a>
+<a id="header-adp-github-headertag614"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/reference.md#function-clith-with)\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\. Even more\, you can bind functions like LABELS does and nest expressions like UIOP\:NEST\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag693)
-  * [Documentation](/README.md#header-adp-github-headertag694)
-  * [A brief guide](/README.md#header-adp-github-headertag695)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag614)
+  * [Documentation](/README.md#header-adp-github-headertag615)
+  * [A brief guide](/README.md#header-adp-github-headertag616)
+  * [Emacs \+ Slime indentation support](/README.md#header-adp-github-headertag629)
 
 
-<a id="header-adp-github-headertag694"></a>
+<a id="header-adp-github-headertag615"></a>
 ## Documentation
 
 * [Reference](/docs/reference.md#header-adp-github-reference)
 
 
-<a id="header-adp-github-headertag695"></a>
+<a id="header-adp-github-headertag616"></a>
 ## A brief guide
 
 The simplest way to use [clith\:with](/docs/reference.md#function-clith-with) is like using LET or MULTIPLE\-VALUE\-BIND\:
@@ -94,4 +95,30 @@ The function [clith\:destroyer](/docs/reference.md#function-clith-destroyer) is 
 (defmethod destroyer ((obj stream))
   "Closes a stream."
   (close obj))
+`````
+
+<a id="header-adp-github-headertag629"></a>
+## Emacs \+ Slime indentation support
+
+If you try to indent the [clith\:with](/docs/reference.md#function-clith-with) macro using the label form\, you will see that something is not right\.
+
+`````common-lisp
+(with ((func (x y)
+             (+ x y))))  ;; <-- Bad indentation
+`````
+
+We can make a small change to the slime\'s indentation system\. Just add the following code to your ``` init.el ``` file\:
+
+`````emacs-lisp
+;; ------ clith ------
+(let ((name 'with)
+      (indentation '((&whole 4 &rest (&whole 1 1 2 &body)) &body)))
+  (put name 'common-lisp-indent-function indentation))
+`````
+
+Let\'s try to indent the same example\:
+
+`````common-lisp
+(with ((func (x y)
+         (+ x y))))  ;; <-- Good indentation :D
 `````

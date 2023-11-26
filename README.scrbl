@@ -80,3 +80,29 @@ The function @fref[clith:destroyer] is already defined for stream objects. In fa
   "Closes a stream."
   (close obj))
 }
+
+@subheader{Emacs + Slime indentation support}
+
+If you try to indent the @fref[clith:with] macro using the label form, you will see that something is not right.
+
+@code-block[:lang "common-lisp"]{
+(with ((func (x y)
+             (+ x y))))  ;; <-- Bad indentation
+}
+
+We can make a small change to the slime's indentation system. Just add the following code to your @code{init.el} file:
+
+@code-block[:lang "emacs-lisp"]{
+;; ------ clith ------
+(let ((name 'with)
+      (indentation '((&whole 4 &rest (&whole 1 1 2 &body)) &body)))
+  (put name 'common-lisp-indent-function indentation))
+}
+
+Let's try to indent the same example:
+
+@code-block[:lang "common-lisp"]{
+(with ((func (x y)
+         (+ x y))))  ;; <-- Good indentation :D
+}
+
