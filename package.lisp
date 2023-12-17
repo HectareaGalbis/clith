@@ -2,4 +2,6 @@
 (defpackage #:clith
   (:use #:cl #:alexandria)
   (:export #:with
-	   #:destroyer))
+	   #:destroyer
+           #:define-let-expander
+           #:define-nest-expander))
