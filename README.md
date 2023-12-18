@@ -1,27 +1,27 @@
-<a id="header-adp-github-headertag614"></a>
+<a id="header-adp-github-headertag662"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/reference.md#function-clith-with)\. It is like the \'with expression\' in Python but better\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\. Even more\, you can bind functions like LABELS does and nest expressions like UIOP\:NEST\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag614)
-  * [Documentation](/README.md#header-adp-github-headertag615)
-  * [Basic usage](/README.md#header-adp-github-headertag616)
-  * [Customizing expansion](/README.md#header-adp-github-headertag629)
-    * [Nest expanders](/README.md#header-adp-github-headertag630)
-    * [Let expanders](/README.md#header-adp-github-headertag631)
-  * [Declarations](/README.md#header-adp-github-headertag632)
-  * [Emacs \+ Slime indentation support](/README.md#header-adp-github-headertag633)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag662)
+  * [Documentation](/README.md#header-adp-github-headertag663)
+  * [Basic usage](/README.md#header-adp-github-headertag664)
+  * [Customizing expansion](/README.md#header-adp-github-headertag677)
+    * [Nest expanders](/README.md#header-adp-github-headertag678)
+    * [Let expanders](/README.md#header-adp-github-headertag679)
+  * [Declarations](/README.md#header-adp-github-headertag680)
+  * [Emacs \+ Slime indentation support](/README.md#header-adp-github-headertag681)
 
 
-<a id="header-adp-github-headertag615"></a>
+<a id="header-adp-github-headertag663"></a>
 ## Documentation
 
 * [Reference](/docs/reference.md#header-adp-github-reference)
 
 
-<a id="header-adp-github-headertag616"></a>
+<a id="header-adp-github-headertag664"></a>
 ## Basic usage
 
 The simplest way to use [clith\:with](/docs/reference.md#function-clith-with) is like using LET or MULTIPLE\-VALUE\-BIND\:
@@ -102,12 +102,12 @@ The function [clith\:destroyer](/docs/reference.md#function-clith-destroyer) is 
 `````
 
 
-<a id="header-adp-github-headertag629"></a>
+<a id="header-adp-github-headertag677"></a>
 ## Customizing expansion
 
 There are some cases that [clith\:with](/docs/reference.md#function-clith-with) cannot resolve on its own\. Expanders are designed with this in mind\. When using a let\-like\, multiple\-value\-bind\-like or nest\-like form\, we can control how [clith\:with](/docs/reference.md#function-clith-with) is expanded\. For the two first forms we have ``` let expanders ```\, and for the last one we have ``` nest expanders ```\.
 
-<a id="header-adp-github-headertag630"></a>
+<a id="header-adp-github-headertag678"></a>
 ### Nest expanders
 
 Let\'s see what problems are trying to solve ``` nest expanders ```\. Many libraries have functions that initialize something that must be terminated later\, but they don\'t return any object\. They just change the context\. Consider the following two functions\:
@@ -153,7 +153,7 @@ Now we can use the function ``` initialize-audio-subsystem ``` into a nest\-like
 Leaving from the ``` WITH ``` expression will cause the audio subsystem to terminate\.
 
 
-<a id="header-adp-github-headertag631"></a>
+<a id="header-adp-github-headertag679"></a>
 ### Let expanders
 
 As you might expect\, this will be very similar to ``` nest expanders ``` but for functions returning something\. But we have already the generic function [clith\:destroyer](/docs/reference.md#function-clith-destroyer)\. So\, what is the point of ``` let expanders ```\?
@@ -226,7 +226,7 @@ Observe what we\'ve got here\. Flexibility and power with the same interface\! T
 I recommend to read the [clith\:with](/docs/reference.md#function-clith-with) reference\. There is an easier example of a ``` let exapander ``` that might be helpful to understand better how to create one\.
 
 
-<a id="header-adp-github-headertag632"></a>
+<a id="header-adp-github-headertag680"></a>
 ## Declarations
 
 The macro [clith\:with](/docs/reference.md#function-clith-with) supports declarations\. Like declarations only work if used immediatly after a ``` let* ```\, ``` multiple-value-bind ``` or ``` labels ``` expression\, [clith\:with](/docs/reference.md#function-clith-with) must manage declarations specially\.
@@ -247,8 +247,8 @@ Someone may think that ``` x ``` is only special once the body start evaluating\
 
 Another thing we should take into account is that declaration will affect only once to the lowest binding variable\. For example\:
 
-`````
-common-lisp(with ((x 5)
+`````common-lisp
+(with ((x 5)
        (print-x () x)
        (x 10))
   (declare (special x))
@@ -258,7 +258,7 @@ common-lisp(with ((x 5)
 In this case\, the first ``` x ``` is not special\. The second one is\. So\, returning ``` #'print-x ``` is safe\.
 
 
-<a id="header-adp-github-headertag633"></a>
+<a id="header-adp-github-headertag681"></a>
 ## Emacs \+ Slime indentation support
 
 If you try to indent the [clith\:with](/docs/reference.md#function-clith-with) macro using the label form\, you will see that something is not right\.

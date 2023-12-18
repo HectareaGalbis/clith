@@ -223,7 +223,7 @@ Someone may think that @code{x} is only special once the body start evaluating. 
 
 Another thing we should take into account is that declaration will affect only once to the lowest binding variable. For example:
 
-@code-block["common-lisp"]{
+@code-block[:lang "common-lisp"]{
 (with ((x 5)
        (print-x () x)
        (x 10))
