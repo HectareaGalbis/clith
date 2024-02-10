@@ -1,5 +1,8 @@
 
 (defsystem "clith"
+  :author "Héctor Galbis Sanchis"
+  :description "Common Lisp wITH macro. A general WITH macro."
+  :license "MIT"
   :depends-on ("alexandria")
   :components ((:file "package")
 	       (:file "clith")))
