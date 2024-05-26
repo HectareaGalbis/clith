@@ -13,7 +13,8 @@ See WITH for more information and some examples."
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (labels ((,func (,vars ,with-body ,@args)
                   ,@body))
-         (setf (gethash ',name *with-expanders*) #',func)))))
+         (setf (gethash ',name *with-expanders*) #',func)
+         ',name))))
 
 (defmacro define-cl-expander (name (vars with-body &rest args) &body body)
   "Define a cl macro. A cl macro controls how a WITH binding form is expanded when a cl name is encountered.
@@ -22,7 +23,8 @@ This is a private macro and the user should not use it."
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (labels ((,func (,vars ,with-body ,@args)
                   ,@body))
-         (setf (gethash ,(symbol-name name) *cl-expanders*) #',func)))))
+         (setf (gethash ,(symbol-name name) *cl-expanders*) #',func)
+         ,(symbol-name name)))))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
