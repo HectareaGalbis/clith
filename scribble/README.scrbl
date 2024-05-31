@@ -11,6 +11,23 @@ This library defines the macro @fref[clith:with]. It allows you to create some o
 
 @mini-table-of-contents[]
 
+@subheader{Installation}
+
+@itemize[
+@item{Manual:
+@code-block[:lang "sh"]{
+cd ~/common-lisp
+git clone https://github.com/Hectarea1996/clith.git
+}
+}
+@item{Quicklisp (Ultralisp):
+@code-block[:lang "common-lisp"]{
+(ql-dist:install-dist "http://dist.ultralisp.org/" :prompt nil)
+(ql:quickload "clith")
+}
+}
+]
+
 @subheader{Documentation}
 
 @itemize[
