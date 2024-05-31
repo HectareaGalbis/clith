@@ -11,10 +11,10 @@
                              (:file "definitions")))))
 
 
-;; (defsystem "clith/docs"
-;;   :defsystem-depends-on ("adp-github")
-;;   :build-operation "adp-github-op"
-;;   :depends-on ("clith")
-;;   :components ((:module "scribble"
-;;                 :components ((:scribble "reference")
-;;                              (:scribble "README")))))
+(defsystem "clith/docs"
+  :defsystem-depends-on ("adp-github")
+  :build-operation "adp-github-op"
+  :depends-on ("clith")
+  :components ((:module "scribble"
+                :components ((:scribble "reference")
+                             (:scribble "README")))))
