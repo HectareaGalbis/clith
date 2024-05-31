@@ -110,7 +110,7 @@ Let's see another example:
 
 Note that now we have @code{z} instead of @code{(z)}. Both cases are valid. CLITH makes sure that @code{vars} is alwais bound to a list of variables. If the user doesn't indicate any variable, then @code{NIL} is bound to @code{vars}.
 
-@subsubheader{Built-in WITH expanders}
+@subheader{Built-in WITH expanders}
 
 Every macro from the package @code{common-lisp} whose name starts with @code{with-} has its own expander. We've already seen an example using the expander of @code{with-open-file}. The complete list is:
 
