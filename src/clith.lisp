@@ -9,20 +9,23 @@
 (defmacro define-with-expander (name (vars with-body &rest args) &body body)
   "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. 
 See WITH for more information and some examples."
-  (with-gensyms (func)
+  (check-type with-body symbol)
+  (with-gensyms (func pre-vars pre-args)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (labels ((,func (,vars ,with-body ,@args)
-                  ,@body))
+       (flet ((,func (,pre-vars ,with-body ,pre-args)
+                (destructuring-bind (,vars ,@args) `(,,pre-vars ,@,pre-args)
+                  ,@body)))
          (setf (gethash ',name *with-expanders*) #',func)
          ',name))))
 
 (defmacro define-cl-expander (name (vars with-body &rest args) &body body)
   "Define a cl macro. A cl macro controls how a WITH binding form is expanded when a cl name is encountered.
 This is a private macro and the user should not use it."
-  (with-gensyms (func)
+  (with-gensyms (func pre-vars pre-args)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (labels ((,func (,vars ,with-body ,@args)
-                  ,@body))
+       (flet ((,func (,pre-vars ,with-body ,pre-args)
+                  (destructuring-bind (,vars ,@args) `(,,pre-vars ,@,pre-args)
+                    ,@body)))
          (setf (gethash ,(symbol-name name) *cl-expanders*) #',func)
          ,(symbol-name name)))))
 
@@ -39,8 +42,14 @@ This is a private macro and the user should not use it."
       (when (= (length binding) 2)
         (unless (or (symbolp (car binding))
 		    (and (listp (car binding))
-		         (every #'symbolp (car binding))))
-	  (error "CLITH error: The vars to be bound must be a symbol or a list of symbols but ~s was found."
+		         (every (lambda (x)
+                                  (or (symbolp x)
+                                      (and (listp x)
+                                           (= (length x) 2)
+                                           (symbolp (car x))
+                                           (symbolp (cadr x)))))
+                                (car binding))))
+	  (error "CLITH error: The vars to be bound must be a symbol or a list where each element is a symbol or a list of two symbols but found: ~s"
 	         (car binding))))))
 
   (defun check-bindings (bindings)
@@ -205,9 +214,11 @@ This is a private macro and the user should not use it."
         (values nil declarations)
         (let ((binding (car canonized-bindings))
               (rest-bindings (cdr canonized-bindings)))
+          (print binding)
           (multiple-value-bind (binding-declarations rest-declarations)
               (split-declarations rest-bindings declarations)
-            (let ((syms (car binding)))
+            (let ((syms (mapcar (lambda (x) (car (ensure-list x))) (car binding))))
+              (print syms)
               (multiple-value-bind (new-binding-declarations new-rest-declarations)
                   (extract-var-declarations syms rest-declarations)
                 (values (append new-binding-declarations binding-declarations)
@@ -279,14 +290,14 @@ This is a private macro and the user should not use it."
            (macro-name (caadr binding))
            (args (cdadr binding))
            (func (gethash macro-name *with-expanders*)))
-      (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) (list body)) ,@args))))
+      (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) (list body)) ,args))))
 
   (defun make-cl-macro-form (binding body declaration)
     (let* ((vars (car binding))
            (macro-name (caadr binding))
            (args (cdadr binding))
            (func (gethash (symbol-name macro-name) *cl-expanders*)))
-      (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) (list body)) ,@args))))
+      (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) (list body)) ,args))))
   
   (defun make-multiple-value-bind-form (binding body declaration)
     `(multiple-value-bind ,@binding
