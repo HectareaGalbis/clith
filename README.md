@@ -1,21 +1,21 @@
 
 
-<a id="header-adp-github-headertag708"></a>
+<a id="header-adp-github-headertag614"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/scribble/reference.md#function-clith-with)\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag708)
-  * [Installation](/README.md#header-adp-github-headertag709)
-  * [Documentation](/README.md#header-adp-github-headertag710)
-  * [Basic usage](/README.md#header-adp-github-headertag711)
-  * [Customizing expansion](/README.md#header-adp-github-headertag718)
-  * [Built\-in WITH expanders](/README.md#header-adp-github-headertag725)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag614)
+  * [Installation](/README.md#header-adp-github-headertag615)
+  * [Documentation](/README.md#header-adp-github-headertag616)
+  * [Basic usage](/README.md#header-adp-github-headertag617)
+  * [Customizing expansion](/README.md#header-adp-github-headertag624)
+  * [Built\-in WITH expanders](/README.md#header-adp-github-headertag631)
 
 
-<a id="header-adp-github-headertag709"></a>
+<a id="header-adp-github-headertag615"></a>
 ## Installation
 
 * Manual\:
@@ -31,13 +31,13 @@ git clone https://github.com/Hectarea1996/clith.git
 (ql:quickload "clith")
 `````
 
-<a id="header-adp-github-headertag710"></a>
+<a id="header-adp-github-headertag616"></a>
 ## Documentation
 
 * [Reference](/docs/scribble/reference.md#header-adp-github-reference)
 
 
-<a id="header-adp-github-headertag711"></a>
+<a id="header-adp-github-headertag617"></a>
 ## Basic usage
 
 The simplest way to use [clith\:with](/docs/scribble/reference.md#function-clith-with) is like using LET or MULTIPLE\-VALUE\-BIND\:
@@ -81,7 +81,7 @@ Or we can even take the values of an object\:
 195
 `````
 
-<a id="header-adp-github-headertag718"></a>
+<a id="header-adp-github-headertag624"></a>
 ## Customizing expansion
 
 When using certain binding form\, we can control how [clith\:with](/docs/scribble/reference.md#function-clith-with) is expanded\. In order to do this we must use [clith\:define\-with\-expander](/docs/scribble/reference.md#function-clith-define-with-expander)\.
@@ -150,7 +150,7 @@ Let\'s see another example\:
 
 Note that now we have ``` z ``` instead of ``` (z) ```\. Both cases are valid\. CLITH makes sure that ``` vars ``` is always bound to a list of variables\. If the user doesn\'t indicate any variable\, then ``` NIL ``` is bound to ``` vars ```\.
 
-<a id="header-adp-github-headertag725"></a>
+<a id="header-adp-github-headertag631"></a>
 ## Built\-in WITH expanders
 
 Every macro from the package ``` common-lisp ``` whose name starts with ``` with- ``` has its own expander\. We\'ve already seen an example using the expander of ``` with-open-file ```\. The complete list is\:

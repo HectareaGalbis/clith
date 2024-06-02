@@ -17,9 +17,10 @@ This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
 
-  binding  ::= var | ([vars] form)
-  vars     ::= var | (list-var*)
-  list-var ::= var | (var var)
+  binding    ::= var | ([vars] form)
+  vars       ::= var | (list-var*)
+  list-var   ::= var | (var var-option*)
+  var-option ::= form
 
 WITH accepts a list of binding clauses. Each binding clause must be a symbol or a list. Depending of what the
 clause is, WITH's behaeviour is different:
