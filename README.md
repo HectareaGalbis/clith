@@ -1,21 +1,21 @@
 
 
-<a id="header-adp-github-headertag614"></a>
+<a id="header-adp-github-headertag741"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/scribble/reference.md#function-clith-with)\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag614)
-  * [Installation](/README.md#header-adp-github-headertag615)
-  * [Documentation](/README.md#header-adp-github-headertag616)
-  * [Basic usage](/README.md#header-adp-github-headertag617)
-  * [Customizing expansion](/README.md#header-adp-github-headertag622)
-  * [Built\-in WITH expanders](/README.md#header-adp-github-headertag629)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag741)
+  * [Installation](/README.md#header-adp-github-headertag742)
+  * [Documentation](/README.md#header-adp-github-headertag743)
+  * [Basic usage](/README.md#header-adp-github-headertag744)
+  * [Customizing expansion](/README.md#header-adp-github-headertag751)
+  * [Built\-in WITH expanders](/README.md#header-adp-github-headertag758)
 
 
-<a id="header-adp-github-headertag615"></a>
+<a id="header-adp-github-headertag742"></a>
 ## Installation
 
 * Manual\:
@@ -31,13 +31,13 @@ git clone https://github.com/Hectarea1996/clith.git
 (ql:quickload "clith")
 `````
 
-<a id="header-adp-github-headertag616"></a>
+<a id="header-adp-github-headertag743"></a>
 ## Documentation
 
 * [Reference](/docs/scribble/reference.md#header-adp-github-reference)
 
 
-<a id="header-adp-github-headertag617"></a>
+<a id="header-adp-github-headertag744"></a>
 ## Basic usage
 
 The simplest way to use [clith\:with](/docs/scribble/reference.md#function-clith-with) is like using LET or MULTIPLE\-VALUE\-BIND\:
@@ -64,8 +64,24 @@ But also we can open a file that will be destroyed automatically when exiting th
 
 And the content of the file should be ``` "Hey!" ```\.
 
+Or we can even take the values of an object\:
 
-<a id="header-adp-github-headertag622"></a>
+`````common-lisp
+(defclass point ()
+  ((x :initarg :x)
+   (y :initarg :y)))
+
+(clith:with ((start (make-instance 'point :x 5 :y 10))
+             (end   (make-instance 'point :x -3 :y 21))
+             ((x y)           (slots start))
+             (((x2 x) (y2 y)) (slots end)))
+  (+ (* x x2) (* y y2)))
+`````
+`````common-lisp
+195
+`````
+
+<a id="header-adp-github-headertag751"></a>
 ## Customizing expansion
 
 When using certain binding form\, we can control how [clith\:with](/docs/scribble/reference.md#function-clith-with) is expanded\. In order to do this we must use [clith\:define\-with\-expander](/docs/scribble/reference.md#function-clith-define-with-expander)\.
@@ -134,20 +150,62 @@ Let\'s see another example\:
 
 Note that now we have ``` z ``` instead of ``` (z) ```\. Both cases are valid\. CLITH makes sure that ``` vars ``` is always bound to a list of variables\. If the user doesn\'t indicate any variable\, then ``` NIL ``` is bound to ``` vars ```\.
 
-<a id="header-adp-github-headertag629"></a>
+<a id="header-adp-github-headertag758"></a>
 ## Built\-in WITH expanders
 
 Every macro from the package ``` common-lisp ``` whose name starts with ``` with- ``` has its own expander\. We\'ve already seen an example using the expander of ``` with-open-file ```\. The complete list is\:
 
-* ``` with-accesors ``` \-\> ``` accesors ```
-* ``` with-compilation-unit ``` \-\> ``` compilation-unit ```
-* ``` with-condition-restarts ``` \-\> ``` condition-restarts ```
-* ``` with-hash-table-iterator ``` \-\> ``` hash-table-iterator ```
-* ``` with-input-from-string ``` \-\> ``` input-from-string ```
-* ``` with-open-file ``` \-\> ``` open-file ```
-* ``` with-open-stream ``` \-\> ``` open-stream ```
-* ``` with-output-to-string ``` \-\> ``` output-to-string ```
-* ``` with-package-iterator ``` \-\> ``` package-iterator ```
-* ``` with-simple-restart ``` \-\> ``` simple-restart ```
-* ``` with-slots ``` \-\> ``` slots ```
-* ``` with-standard-io-syntax ``` \-\> ``` standard-io-syntax ```
+<table>
+<tr>
+<td>CL Standard macro</td>
+<td>WITH expander</td>
+</tr>
+<tr>
+<td>``` with-accesors ```</td>
+<td>``` accesors ```</td>
+</tr>
+<tr>
+<td>with\-compilation\-unit</td>
+<td>compilation\-unit</td>
+</tr>
+<tr>
+<td>with\-condition\-restarts</td>
+<td>condition\-restarts</td>
+</tr>
+<tr>
+<td>with\-hash\-table\-iterator</td>
+<td>hash\-table\-iterator</td>
+</tr>
+<tr>
+<td>with\-input\-from\-string</td>
+<td>input\-from\-string</td>
+</tr>
+<tr>
+<td>with\-open\-file</td>
+<td>open\-file</td>
+</tr>
+<tr>
+<td>with\-open\-stream</td>
+<td>open\-stream</td>
+</tr>
+<tr>
+<td>with\-output\-to\-string</td>
+<td>output\-to\-string</td>
+</tr>
+<tr>
+<td>with\-package\-iterator</td>
+<td>package\-iterator</td>
+</tr>
+<tr>
+<td>with\-simple\-restart</td>
+<td>simple\-restart</td>
+</tr>
+<tr>
+<td>with\-slots</td>
+<td>slots</td>
+</tr>
+<tr>
+<td>with\-standard\-io\-syntax</td>
+<td>standard\-io\-syntax</td>
+</tr>
+</table>

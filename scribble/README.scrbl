@@ -54,6 +54,19 @@ But also we can open a file that will be destroyed automatically when exiting th
 
 And the content of the file should be @code{"Hey!"}.
 
+Or we can even take the values of an object:
+
+@example{
+(defclass point ()
+  ((x :initarg :x)
+   (y :initarg :y)))
+
+(clith:with ((start (make-instance 'point :x 5 :y 10))
+             (end   (make-instance 'point :x -3 :y 21))
+             ((x y)           (slots start))
+             (((x2 x) (y2 y)) (slots end)))
+  (+ (* x x2) (* y y2)))
+}
 
 @subheader{Customizing expansion}
 
@@ -114,17 +127,44 @@ Note that now we have @code{z} instead of @code{(z)}. Both cases are valid. CLIT
 
 Every macro from the package @code{common-lisp} whose name starts with @code{with-} has its own expander. We've already seen an example using the expander of @code{with-open-file}. The complete list is:
 
-@itemize[
-@item{@code{with-accesors} -> @code{accesors}}
-@item{@code{with-compilation-unit} -> @code{compilation-unit}}
-@item{@code{with-condition-restarts} -> @code{condition-restarts}}
-@item{@code{with-hash-table-iterator} -> @code{hash-table-iterator}}
-@item{@code{with-input-from-string} -> @code{input-from-string}}
-@item{@code{with-open-file} -> @code{open-file}}
-@item{@code{with-open-stream} -> @code{open-stream}}
-@item{@code{with-output-to-string} -> @code{output-to-string}}
-@item{@code{with-package-iterator} -> @code{package-iterator}}
-@item{@code{with-simple-restart} -> @code{simple-restart}}
-@item{@code{with-slots} -> @code{slots}}
-@item{@code{with-standard-io-syntax} -> @code{standard-io-syntax}}
+@table[
+@row[
+@cell{CL Standard macro} @cell{WITH expander}
+]
+@row[
+@cell{@code{with-accesors}} @cell{@code{accesors}}
+]
+@row[
+@cell{with-compilation-unit} @cell{compilation-unit}
+]
+@row[
+@cell{with-condition-restarts} @cell{condition-restarts}
+]
+@row[
+@cell{with-hash-table-iterator} @cell{hash-table-iterator}
+]
+@row[
+@cell{with-input-from-string} @cell{input-from-string}
+]
+@row[
+@cell{with-open-file} @cell{open-file}
+]
+@row[
+@cell{with-open-stream} @cell{open-stream}
+]
+@row[
+@cell{with-output-to-string} @cell{output-to-string}
+]
+@row[
+@cell{with-package-iterator} @cell{package-iterator}
+]
+@row[
+@cell{with-simple-restart} @cell{simple-restart}
+]
+@row[
+@cell{with-slots} @cell{slots}
+]
+@row[
+@cell{with-standard-io-syntax} @cell{standard-io-syntax}
+]
 ]
