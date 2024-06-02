@@ -132,7 +132,7 @@ Every macro from the package @code{common-lisp} whose name starts with @code{wit
 @cell{CL Standard macro} @cell{WITH expander}
 ]
 @row[
-@cell{@code{with-accesors}} @cell{@code{accesors}}
+@cell{with-accesors} @cell{accesors}
 ]
 @row[
 @cell{with-compilation-unit} @cell{compilation-unit}
