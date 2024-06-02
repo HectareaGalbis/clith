@@ -68,7 +68,7 @@ And the content of the file should be ``` "Hey!" ```\.
 <a id="header-adp-github-headertag622"></a>
 ## Customizing expansion
 
-There are some cases that [clith\:with](/docs/scribble/reference.md#function-clith-with) cannot resolve on its own\. Expanders are designed to solve this\. When using certain binding form\, we can control how [clith\:with](/docs/scribble/reference.md#function-clith-with) is expanded\. In order to do this we must use [clith\:define\-with\-expander](/docs/scribble/reference.md#function-clith-define-with-expander)\.
+When using certain binding form\, we can control how [clith\:with](/docs/scribble/reference.md#function-clith-with) is expanded\. In order to do this we must use [clith\:define\-with\-expander](/docs/scribble/reference.md#function-clith-define-with-expander)\.
 
 As a simple example\, let\'s define the with expander ``` specials ```\. It must bind some variables dynamically \(via ``` (declare (special var)) ```\)\.
 
@@ -132,7 +132,7 @@ Let\'s see another example\:
 5
 `````
 
-Note that now we have ``` z ``` instead of ``` (z) ```\. Both cases are valid\. CLITH makes sure that ``` vars ``` is alwais bound to a list of variables\. If the user doesn\'t indicate any variable\, then ``` NIL ``` is bound to ``` vars ```\.
+Note that now we have ``` z ``` instead of ``` (z) ```\. Both cases are valid\. CLITH makes sure that ``` vars ``` is always bound to a list of variables\. If the user doesn\'t indicate any variable\, then ``` NIL ``` is bound to ``` vars ```\.
 
 <a id="header-adp-github-headertag629"></a>
 ## Built\-in WITH expanders

@@ -17,8 +17,9 @@ This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
 
-  binding ::= var | ([vars] form)
-  vars    ::= var | (var*)
+  binding  ::= var | ([vars] form)
+  vars     ::= var | (list-var*)
+  list-var ::= var | (var var)
 
 WITH accepts a list of binding clauses. Each binding clause must be a symbol or a list. Depending of what the
 clause is, WITH's behaeviour is different:
@@ -36,8 +37,10 @@ clause is, WITH's behaeviour is different:
   - A list with two elements: The first element must be a symbol or a list of symbols to be bound. The second
     element is a form that will be evaluated or expanded.
 
-      (with ((x 1) ; <- X is bound to 1
-             ((a b c) (values 4 5 6))) ; <- A, B and C are bound to 4, 5 and 6 respectively.
+      (with ((x 1)                                        ; <- X is bound to 1
+             ((a b c) (values 4 5 6)))                    ; <- A, B and C are bound to 4, 5 and 6 respectively.
+             ((member1 (myvar member2))  (slots object))  ; <- member1 and myvar are bound with the values from
+                                                               the class members member1 and member2 of object
         ...)
 
 These forms are the basic features of WITH. But, if you need even more control of what WITH should do, you
@@ -46,7 +49,7 @@ can use expanders. You can define an expander with DEFINE-WITH-EXPANDER.
 Suppose we have (MAKE-WINDOW TITLE) and (DESTROY-WINDOW WINDOW). We want to control the expansion of WITH 
 in order to use both functions. Let's define the WITH expander:
 
-   (clith:define-with-expander window (vars body title)
+   (clith:define-with-expander make-window (vars body title)
      (let ((window-var (gensym)))
        `(let ((,window-var (make-window ,title)))
           (multiple-value-bind ,vars ,window-var

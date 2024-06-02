@@ -57,7 +57,7 @@ And the content of the file should be @code{"Hey!"}.
 
 @subheader{Customizing expansion}
 
-There are some cases that @fref[clith:with] cannot resolve on its own. Expanders are designed to solve this. When using certain binding form, we can control how @fref[clith:with] is expanded. In order to do this we must use @fref[clith:define-with-expander].
+When using certain binding form, we can control how @fref[clith:with] is expanded. In order to do this we must use @fref[clith:define-with-expander].
 
 As a simple example, let's define the with expander @code{specials}. It must bind some variables dynamically (via @code{(declare (special var))}).
 
@@ -108,7 +108,7 @@ Let's see another example:
   (print z))
 }
 
-Note that now we have @code{z} instead of @code{(z)}. Both cases are valid. CLITH makes sure that @code{vars} is alwais bound to a list of variables. If the user doesn't indicate any variable, then @code{NIL} is bound to @code{vars}.
+Note that now we have @code{z} instead of @code{(z)}. Both cases are valid. CLITH makes sure that @code{vars} is always bound to a list of variables. If the user doesn't indicate any variable, then @code{NIL} is bound to @code{vars}.
 
 @subheader{Built-in WITH expanders}
 
