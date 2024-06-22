@@ -6,14 +6,44 @@
   (defvar *with-expanders* (make-hash-table))
   (defvar *cl-expanders* (make-hash-table :test 'equal)))
 
-(defmacro define-with-expander (name (vars with-body &rest args) &body body)
-  "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. 
-See WITH for more information and some examples."
-  (check-type with-body symbol)
-  (with-gensyms (func pre-vars pre-args)
+(defmacro defwith (name ((vars &rest args) &rest with-body) &body body)
+  "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
+the following syntax:
+
+  (DEFWITH name ((vars args*) with-body-args*) body*)
+
+  name             ::= symbol
+  vars             ::= (var-with-options*)
+  var-with-options ::= symbol | (symbol option*)
+  option           ::= form
+  body             ::= form
+
+The symbol NAME will be available to use inside WITH performing a custom expansion defined by DEFWITH.
+The variables to be bound are passed through VARS (VARS will always be a list) and the arguments passed
+to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Note that WITH-BODY
+can contain declarations.
+
+As an example, let's define the with expander MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
+
+  (defwith my-file ((vars filespec &rest options) &body body)
+    (with-gensyms (stream)
+      `(with-open-file (,stream ,filespec ,@options)
+         (multiple-value-bind ,vars ,stream
+           ,@body))))
+
+As VARS is always a list, we can use MULTIPLE-VALUE-BIND in case additional variables are passed.
+Also, we are assuming here that no additional options are passed with the varaible to be bound.
+
+Now, using WITH:
+
+  (with ((file (my-file \"~/file.txt\" :direction :output)))
+    (print \"Hey!\" file))
+"
+  (check-type name symbol)
+  (with-gensyms (func pre-vars pre-args pre-with-body)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (flet ((,func (,pre-vars ,with-body ,pre-args)
-                (destructuring-bind (,vars ,@args) `(,,pre-vars ,@,pre-args)
+       (flet ((,func (,pre-vars ,pre-with-body ,pre-args)
+                (destructuring-bind ((,vars ,@args) ,@with-body) `((,,pre-vars ,@,pre-args) ,@,pre-with-body)
                   ,@body)))
          (setf (gethash ',name *with-expanders*) #',func)
          ',name))))
@@ -58,12 +88,6 @@ This is a private macro and the user should not use it."
 
   (defun var-declaration-p (id)
     (member id '(dynamic-extent ignore ignorable special type)))
-
-  ;; (defun func-declaration-p (id)
-  ;;   (member id '(dynamic-extent ignore ignorable inline not-inline ftype)))
-
-  ;; (defun var-func-declaration-p (id)
-  ;;   (member id '(dynamic-extent ignore ignorable)))
   
   (defun extract-declaration-single-var (var declarations)
     (if declarations
@@ -91,35 +115,6 @@ This is a private macro and the user should not use it."
                         (cons current-declaration body-declarations)))))
         (values nil nil)))
 
-  ;; (defun extract-declaration-single-func (func declarations)
-  ;;   (if declarations
-  ;;       (let* ((current-declaration (car declarations))
-  ;;              (rest-declarations (cdr declarations))
-  ;;              (id (car current-declaration))
-  ;;              (complete-func (if (var-func-declaration-p id)
-  ;;                                 `(function ,func)
-  ;;                                 func))
-  ;;              (funcs (if (eq id 'ftype)
-  ;;                         (cddr current-declaration)
-  ;;                         (cdr current-declaration)))
-  ;;              (func-type (when (eq id 'ftype)
-  ;;                           (list (cadr current-declaration)))))
-  ;;         (multiple-value-bind (extracted-declarations body-declarations)
-  ;;             (extract-declaration-single-func func rest-declarations)
-  ;;           (if (and (func-declaration-p (car current-declaration))
-  ;;                    (member complete-func funcs :test #'equal))
-  ;;               (let* ((new-extracted-declarations (cons `(,id ,@func-type ,complete-func)
-  ;;                                                        extracted-declarations))
-  ;;                      (new-body-declarations (if (= (length funcs) 1)
-  ;;                                                 body-declarations
-  ;;                                                 (cons `(,id ,@func-type ,@(remove complete-func funcs :test #'equal))
-  ;;                                                       body-declarations))))
-  ;;                 (values new-extracted-declarations
-  ;;                         new-body-declarations))
-  ;;               (values extracted-declarations
-  ;;                       (cons current-declaration body-declarations)))))
-  ;;       (values nil nil)))
-
   (defun extract-var-declarations (vars declarations)
     (if vars
         (let ((var (car vars))
@@ -131,18 +126,6 @@ This is a private macro and the user should not use it."
               (values (append extracted-declarations new-extracted-declarations)
                       new-rest-declarations))))
         (values nil declarations)))
-
-  ;; (defun extract-func-declarations (funcs declarations)
-  ;;   (if funcs
-  ;;       (let ((func (car funcs))
-  ;;             (rest-funcs (cdr funcs)))
-  ;;         (multiple-value-bind (extracted-declarations rest-declarations)
-  ;;             (extract-func-declarations rest-funcs declarations)
-  ;;           (multiple-value-bind (new-extracted-declarations new-rest-declarations)
-  ;;               (extract-declaration-single-func func rest-declarations)
-  ;;             (values (append extracted-declarations new-extracted-declarations)
-  ;;                     new-rest-declarations))))
-  ;;       (values nil declarations)))
 
   (defun canonize-binding (binding)
     (cond
@@ -166,38 +149,6 @@ This is a private macro and the user should not use it."
       (and (listp expression)
            (gethash (car expression) *with-expanders*)
            t)))
-  
-  ;; (defun let-binding-p (binding)
-  ;;   (or (symbolp binding)
-  ;;       (and (listp binding)
-  ;;            (= (length binding) 2)
-  ;;            (symbolp (car binding)))))
-
-  ;; (defun let-expander-p (binding)
-  ;;   (and (listp binding)
-  ;;        (= (length binding) 2)
-  ;;        (listp (cadr binding))
-  ;;        (symbolp (caadr binding))
-  ;;        (gethash (caadr binding) *let-expanders*)
-  ;;        t))
-  
-  ;; (defun multiple-value-binding-p (binding)
-  ;;   (and (listp binding)
-  ;;        (= (length binding) 2)
-  ;;        (listp (car binding))))
-
-  ;; (defun label-binding-p (binding)
-  ;;   (and (listp binding)
-  ;;        (> (length binding) 2)))
-
-  ;; (defun nest-expression-p (binding)
-  ;;   (and (listp binding)
-  ;;        (= (length binding) 1)))
-
-  ;; (defun nest-expander-p (binding)
-  ;;   (and (nest-expression-p binding)
-  ;;        (listp (car binding))
-  ;;        (gethash (caar binding) *nest-expanders*)))
 
   (defun extract-declarations (body)
     (loop for (possible-declaration . rest-body) on body
@@ -220,67 +171,6 @@ This is a private macro and the user should not use it."
                 (values (append new-binding-declarations binding-declarations)
                         new-rest-declarations)))))))
 
-  ;; (defun collect-next-binding (predicate elements)
-  ;;   (if (null elements)
-  ;;       (values nil nil)
-  ;;       (if (funcall predicate (car elements))
-  ;;           (values (car elements) (cdr elements) t)
-  ;;           (values nil elements))))
-
-  ;; (defun collect-following-bindings (predicate elements)
-  ;;   (multiple-value-bind (element rest-elements) (collect-next-binding predicate elements)
-  ;;     (if element
-  ;;         (multiple-value-bind (new-elements new-rest-elements)
-  ;;             (collect-following-bindings predicate rest-elements)
-  ;;           (values (cons element new-elements) new-rest-elements))
-  ;;         (values nil rest-elements))))
-  
-  ;; (defun collect-let-expander-binding (bindings)
-  ;;   (collect-next-binding #'let-expander-p bindings))
-  
-  ;; (defun collect-let-bindings (bindings)
-  ;;   (collect-following-bindings (lambda (binding)
-  ;;                                 (and (let-binding-p binding)
-  ;;                                      (not (let-expander-p binding))))
-  ;;                               bindings))
-
-  ;; (defun collect-multiple-value-binding (bindings)
-  ;;   (collect-next-binding #'multiple-value-binding-p bindings))
-
-  ;; (defun collect-labels-bindings (bindings)
-  ;;   (collect-following-bindings #'label-binding-p bindings))
-
-  ;; (defun collect-nest-expander-binding (bindings)
-  ;;   (collect-next-binding #'nest-expander-p bindings))
-  
-  ;; (defun collect-nest-bindings (bindings)
-  ;;   (collect-following-bindings (lambda (binding)
-  ;;                                 (and (nest-expression-p binding)
-  ;;                                      (not (nest-expander-p binding))))
-  ;;                               bindings))
-
-  ;; (defun make-let-expander-form (binding body declaration)
-  ;;   (let* ((bind-vars (ensure-list (car binding)))
-  ;;          (user-func (caadr binding))
-  ;;          (args (cdadr binding))
-  ;;          (func (gethash user-func *let-expanders*)))
-  ;;     (macroexpand-1 `(,func ,bind-vars (,@(when declaration `((declare ,@declaration))) ,body) ,@args))))
-  
-  ;; (defun make-let-form (bindings body declaration)
-  ;;   (let* ((proper-bindings (remove-if #'symbolp bindings))
-  ;;          (vars-to-destroy (mapcar #'car proper-bindings)))
-  ;;     `(let* ,bindings
-  ;;        ,@(when declaration
-  ;;            `((declare ,@declaration)))
-  ;;        ,(if vars-to-destroy
-  ;;             `(unwind-protect
-  ;;                   ,body
-  ;;                (progn
-  ;;                  ,@(mapcar (lambda (var)
-  ;;                              `(destroyer ,var))
-  ;;                            (reverse vars-to-destroy))))
-  ;;             body))))
-
   (defun make-with-macro-form (binding body declaration)
     (let* ((vars (car binding))
            (macro-name (caadr binding))
@@ -300,24 +190,6 @@ This is a private macro and the user should not use it."
          ,@(when declaration
              `((declare ,@declaration)))
        ,body))
-
-  ;; (defun make-labels-form (bindings body declaration)
-  ;;   `(labels ,bindings
-  ;;      ,@(when declaration
-  ;;          `((declare ,@declaration)))
-  ;;      ,body))
-
-  ;; (defun make-nest-expander-form (binding body declaration)
-  ;;   (declare (ignore declaration))
-  ;;   (let* ((user-func (caar binding))
-  ;;          (args (cdar binding))
-  ;;          (func (gethash user-func *nest-expanders*)))
-  ;;     (macroexpand-1 `(,func (,body) ,@args))))
-
-  ;; (defun make-nest-form (bindings body declaration)
-  ;;   (declare (ignore declaration))
-  ;;   (let ((nest-expressions (mapcar #'car bindings)))
-  ;;     `(uiop:nest ,@nest-expressions ,body)))
 
 
   (defun make-with-form (bindings body binding-declarations body-declarations)
@@ -345,39 +217,7 @@ This is a private macro and the user should not use it."
                          (make-with-macro-form binding inner-form binding-declaration))
                         (t
                          (make-multiple-value-bind-form binding inner-form binding-declaration)))
-                      new-rest-declarations))))))
-
-  
-  ;; (defun make-with-form (bindings body binding-declarations body-declarations)
-  ;;   (if (null bindings)
-  ;;       (if body-declarations
-  ;;           (values `(locally
-  ;;                        (declare ,@body-declarations)
-  ;;                      ,@body)
-  ;;                   binding-declarations)
-  ;;           (values `(progn
-  ;;                      ,@body)
-  ;;                   binding-declarations))
-  ;;       (macrolet ((try-make-with-binding-form (collect-func make-form-func)
-  ;;                    (with-gensyms (form-bindings rest-bindings binding-declaration inner-form
-  ;;                                                 rest-declarations new-rest-declarations)
-  ;;                      `(multiple-value-bind (,form-bindings ,rest-bindings) (,collect-func bindings)
-  ;;                         (when ,form-bindings
-  ;;                           (multiple-value-bind (,inner-form ,rest-declarations)
-  ;;                               (make-with-form ,rest-bindings body binding-declarations body-declarations)
-  ;;                             (multiple-value-bind (,binding-declaration ,new-rest-declarations)
-  ;;                                 (split-declarations (ensure-list ,form-bindings) ,rest-declarations)
-  ;;                               (return-from make-with-form
-  ;;                                 (values (,make-form-func ,form-bindings ,inner-form ,binding-declaration)
-  ;;                                         ,new-rest-declarations)))))))))
-  ;;         (try-make-with-binding-form collect-let-expander-binding make-let-expander-form)
-  ;;         (try-make-with-binding-form collect-let-bindings make-let-form)
-  ;;         (try-make-with-binding-form collect-multiple-value-binding make-multiple-value-bind-form)
-  ;;         (try-make-with-binding-form collect-labels-bindings make-labels-form)
-  ;;         (try-make-with-binding-form collect-nest-expander-binding make-nest-expander-form)
-  ;;         (try-make-with-binding-form collect-nest-bindings make-nest-form))))
-  
-  )
+                      new-rest-declarations)))))))
 
 
 (defmacro with (bindings &body body)
@@ -398,27 +238,32 @@ clause is, WITH's behaeviour is different:
       (with (x) ; <- X is bound to NIL
         ...)
 
-  - A list with one element: That element is a form that will be evaluated unless it is a WITH expander.
+  - A list with one element: That element is a form that will be evaluated unless it is a WITH expander. If it
+    is a with expander defined with DEFWITH, DEFWITH will receive NIL as the list of variables to be bound.
       
       (with ((my-function)) ; <- evaluated or expanded
         ...)
 
-  - A list with two elements: The first element must be a symbol or a list of symbols to be bound. The second
-    element is a form that will be evaluated or expanded.
+  - A list with two elements: The first element must be a symbol, a list of symbols to be bound, or a list
+    of symbols with options. The second element is a form that will be evaluated or expanded.
 
       (with ((x 1)                                        ; <- X is bound to 1
              ((a b c) (values 4 5 6)))                    ; <- A, B and C are bound to 4, 5 and 6 respectively.
-             ((member1 (myvar member2))  (slots object))  ; <- member1 and myvar are bound with the values from
-                                                               the class members member1 and member2 of object
+             ((member1 (myvar member2))  (slots object))  ; <- MEMBER1 and MYVAR are bound with the values from
+                                                               the class members MEMBER1 and MEMBER2 of OBJECT
         ...)
 
+    Here, MEMBER2 is an option of MYVAR. Options can be of any form, not just symbols. As SLOTS is a
+    with expander defined with DEFWITH, it will receive (MEMBER1 (MYVAR MEMBER2)) as the variables to be bound,
+    but only MEMBER1 and MYVAR must/should be bound.
+
 These forms are the basic features of WITH. But, if you need even more control of what WITH should do, you
-can use expanders. You can define an expander with DEFINE-WITH-EXPANDER.
+can use expanders. You can define an expander with DEFWITH.
 
 Suppose we have (MAKE-WINDOW TITLE) and (DESTROY-WINDOW WINDOW). We want to control the expansion of WITH 
 in order to use both functions. Let's define the WITH expander:
 
-   (clith:define-with-expander make-window (vars body title)
+   (defwith make-window ((vars title) &body body)
      (let ((window-var (gensym)))
        `(let ((,window-var (make-window ,title)))
           (multiple-value-bind ,vars ,window-var

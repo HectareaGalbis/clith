@@ -70,23 +70,23 @@ Or we can even take the values of an object:
 
 @subheader{Customizing expansion}
 
-When using certain binding form, we can control how @fref[clith:with] is expanded. In order to do this we must use @fref[clith:define-with-expander].
+When using certain binding form, we can control how @fref[clith:with] is expanded. In order to do this we must use @fref[clith:defwith].
 
 As a simple example, let's define the with expander @code{specials}. It must bind some variables dynamically (via @code{(declare (special var))}).
 
-First, take a look at the @fref[clith:define-with-expander] macro:
+First, take a look at the @fref[clith:defwith] macro:
 
 @code-block{
-(clith:define-with-expander specials (vars body &rest vals)
+(clith:defwith specials ((vars &rest vals) &body body)
   ...)
 }
 
-The macro @fref[clith:define-with-expander] must receive 2 arguments: The variables used in the @fref[clith:with] binding and the body of the macro. Lastly, we receive the actual arguments of @code{specials}.
+The macro @fref[clith:defwith] must receive 2 arguments: The variables used in the @fref[clith:with] binding and the body of the macro. Lastly, we receive the actual arguments of @code{specials}.
 
 The rest of the definition is as follows:
 
 @example|{
-(clith:define-with-expander specials (vars body &rest vals)
+(clith:defwith specials ((vars &rest vals) &body body)
   `(multiple-value-bind ,vars (values ,@vals)
      (declare (special ,@vars))
      ,@body))
@@ -109,7 +109,7 @@ Let's use it:
   (add-special-x-y))
 }
 
-In this example, @code{(x y)} is bound to @code{vars} in @fref[clith:define-with-expander], @code{((add-special-x-y))} to @code{body} and @code{(5 10)} to @code{vals}.
+In this example, @code{(x y)} is bound to @code{vars} in @fref[clith:defwith], @code{((add-special-x-y))} to @code{body} and @code{(5 10)} to @code{vals}.
 
 Let's see another example:
 
