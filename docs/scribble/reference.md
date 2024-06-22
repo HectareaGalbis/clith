@@ -30,7 +30,7 @@ As an example, let's define the with expander MY-FILE. We will make WITH to be e
            ,@body))))
 
 As VARS is always a list, we can use MULTIPLE-VALUE-BIND in case additional variables are passed.
-Also, we are assuming here that no additional options are passed with the varaible to be bound.
+Also, we are assuming here that no additional options are passed with the variables to be bound.
 
 Now, using WITH:
 
@@ -63,7 +63,7 @@ clause is, WITH's behaeviour is different:
   - A list with one element: That element is a form that will be evaluated unless it is a WITH expander. If it
     is a with expander defined with DEFWITH, DEFWITH will receive NIL as the list of variables to be bound.
       
-      (with ((my-function)) ; <- evaluated or expanded
+      (with (((my-function arg))) ; <- evaluated or expanded
         ...)
 
   - A list with two elements: The first element must be a symbol, a list of symbols to be bound, or a list
