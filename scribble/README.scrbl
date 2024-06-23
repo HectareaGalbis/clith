@@ -77,7 +77,7 @@ As a simple example, let's define the with expander @code{specials}. It must bin
 First, take a look at the @fref[clith:defwith] macro:
 
 @code-block{
-(clith:defwith specials ((vars &rest vals) &body body)
+(clith:defwith specials (vars (&rest vals) &body body)
   ...)
 }
 
@@ -86,7 +86,7 @@ The macro @fref[clith:defwith] must receive 2 arguments: The variables used in t
 The rest of the definition is as follows:
 
 @example|{
-(clith:defwith specials ((vars &rest vals) &body body)
+(clith:defwith specials (vars (&rest vals) &body body)
   `(multiple-value-bind ,vars (values ,@vals)
      (declare (special ,@vars))
      ,@body))

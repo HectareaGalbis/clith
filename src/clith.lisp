@@ -6,16 +6,17 @@
   (defvar *with-expanders* (make-hash-table))
   (defvar *cl-expanders* (make-hash-table :test 'equal)))
 
-(defmacro defwith (name ((vars &rest args) &rest with-body) &body body)
+(defmacro defwith (name (vars args &rest with-body) &body body)
   "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name ((vars args*) with-body-args*) body*)
+  (DEFWITH name (vars args with-body-args*) body*)
 
   name             ::= symbol
   vars             ::= (var-with-options*)
   var-with-options ::= symbol | (symbol option*)
   option           ::= form
+  args             ::= destructuring-lambda-list
   body             ::= form
 
 The symbol NAME will be available to use inside WITH performing a custom expansion defined by DEFWITH.
@@ -25,7 +26,7 @@ can contain declarations.
 
 As an example, let's define the with expander MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
-  (defwith my-file ((vars filespec &rest options) &body body)
+  (defwith my-file (vars (filespec &rest options) &body body)
     (with-gensyms (stream)
       `(with-open-file (,stream ,filespec ,@options)
          (multiple-value-bind ,vars ,stream
@@ -43,7 +44,7 @@ Now, using WITH:
   (with-gensyms (func pre-vars pre-args pre-with-body)
     `(eval-when (:compile-toplevel :load-toplevel :execute)
        (flet ((,func (,pre-vars ,pre-with-body ,pre-args)
-                (destructuring-bind ((,vars ,@args) ,@with-body) `((,,pre-vars ,@,pre-args) ,@,pre-with-body)
+                (destructuring-bind (,vars ,args ,@with-body) `(,,pre-vars ,,pre-args ,@,pre-with-body)
                   ,@body)))
          (setf (gethash ',name *with-expanders*) #',func)
          ',name))))
@@ -263,7 +264,7 @@ can use expanders. You can define an expander with DEFWITH.
 Suppose we have (MAKE-WINDOW TITLE) and (DESTROY-WINDOW WINDOW). We want to control the expansion of WITH 
 in order to use both functions. Let's define the WITH expander:
 
-   (defwith make-window ((vars title) &body body)
+   (defwith make-window (vars (title) &body body)
      (let ((window-var (gensym)))
        `(let ((,window-var (make-window ,title)))
           (multiple-value-bind ,vars ,window-var
