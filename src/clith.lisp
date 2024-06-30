@@ -177,32 +177,40 @@ This is a private macro and the user should not use it."
            (macro-name (caadr binding))
            (args (cdadr binding))
            (func (gethash macro-name *with-expanders*)))
-      (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) (list body)) ,args))))
+      (list (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) body) ,args)))))
 
   (defun make-cl-macro-form (binding body declaration)
     (let* ((vars (car binding))
            (macro-name (caadr binding))
            (args (cdadr binding))
            (func (gethash (symbol-name macro-name) *cl-expanders*)))
-      (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) (list body)) ,args))))
+      (list (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) body) ,args)))))
   
-  (defun make-multiple-value-bind-form (binding body declaration)
-    `(multiple-value-bind ,@binding
-         ,@(when declaration
-             `((declare ,@declaration)))
-       ,body))
+  (defun make-bind-form (binding body declaration)
+    (let ((complete-body `(,@(when declaration
+                               `((declare ,@declaration)))
+                           ,@body)))
+      (destructuring-bind (vars expression) binding
+        (cond
+          ((null vars)
+           (cons expression body))
+          ((= (length vars) 1)
+           `((let ((,(car vars) ,expression))
+               ,@complete-body)))
+          (t
+           `((multiple-value-bind ,vars ,expression
+               ,@complete-body)))))))
 
 
   (defun make-with-form (bindings body binding-declarations body-declarations)
     (if (null bindings)
         
         (if body-declarations
-            (values `(locally
-                         (declare ,@body-declarations)
-                       ,@body)
+            (values `((locally
+                          (declare ,@body-declarations)
+                        ,@body))
                     binding-declarations)
-            (values `(progn
-                       ,@body)
+            (values body
                     binding-declarations))
         
         (let ((binding (car bindings))
@@ -217,7 +225,7 @@ This is a private macro and the user should not use it."
                         ((with-macro-binding-p binding)
                          (make-with-macro-form binding inner-form binding-declaration))
                         (t
-                         (make-multiple-value-bind-form binding inner-form binding-declaration)))
+                         (make-bind-form binding inner-form binding-declaration)))
                       new-rest-declarations)))))))
 
 
@@ -285,4 +293,7 @@ After the body of WITH is evaluated, MY-WINDOW will be destroyed by DESTROY-WIND
     (multiple-value-bind (declarations actual-body) (extract-declarations body)
       (multiple-value-bind (binding-declarations body-declarations)
           (split-declarations canonized-bindings declarations)
-        (make-with-form canonized-bindings actual-body binding-declarations body-declarations)))))
+        (let ((with-form (make-with-form canonized-bindings actual-body binding-declarations body-declarations)))
+          (if (= (length with-form) 1)
+              (car with-form)
+              (cons 'progn with-form)))))))
