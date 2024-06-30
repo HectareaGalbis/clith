@@ -6,17 +6,38 @@
   (defvar *with-expanders* (make-hash-table))
   (defvar *cl-expanders* (make-hash-table :test 'equal)))
 
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun extract-docstring (body)
+    "Returns the docstring and the body without that docstring."
+    (loop for (expr . rest-body) on body
+          if (and (listp expr) (eq (car expr) 'declare))
+            collect expr into declarations
+          else if (stringp expr)
+                 do (return-from extract-docstring (values expr (append declarations rest-body)))
+          else
+            do (return-from extract-docstring (values nil (append declarations (list expr) rest-body)))))
+
+  (defmethod (setf documentation) (docstring sym (doc-type (eql 'with)))
+    (declare (ignore doc-type))
+    (setf (get sym 'clith::docstring) docstring))
+
+  (defmethod documentation (sym (doc-type (eql 'with)))
+    (declare (ignore doc-type))
+    (get sym 'clith::docstring)))
+
 (defmacro defwith (name (vars args &rest with-body) &body body)
   "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body-args*) body*)
+  (DEFWITH name (vars args with-body-args*) declaration* body*)
 
   name             ::= symbol
   vars             ::= (var-with-options*)
   var-with-options ::= symbol | (symbol option*)
   option           ::= form
   args             ::= destructuring-lambda-list
+  declaration      ::= declaration-form | docstring
   body             ::= form
 
 The symbol NAME will be available to use inside WITH performing a custom expansion defined by DEFWITH.
@@ -27,6 +48,7 @@ can contain declarations.
 As an example, let's define the with expander MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
   (defwith my-file (vars (filespec &rest options) &body body)
+    \"Open a file.\"
     (with-gensyms (stream)
       `(with-open-file (,stream ,filespec ,@options)
          (multiple-value-bind ,vars ,stream
@@ -39,15 +61,21 @@ Now, using WITH:
 
   (with ((file (my-file \"~/file.txt\" :direction :output)))
     (print \"Hey!\" file))
-"
+
+Finally, note that we put a docstring in MY-FILE. We can retrieve it with DOCUMENTATION:
+
+  (documentation 'my-file 'with)  ;; --> \"Open a file.\""
   (check-type name symbol)
-  (with-gensyms (func pre-vars pre-args pre-with-body)
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (flet ((,func (,pre-vars ,pre-with-body ,pre-args)
-                (destructuring-bind (,vars ,args ,@with-body) `(,,pre-vars ,,pre-args ,@,pre-with-body)
-                  ,@body)))
-         (setf (gethash ',name *with-expanders*) #',func)
-         ',name))))
+  (multiple-value-bind (docstring actual-body) (extract-docstring body)
+    (with-gensyms (func pre-vars pre-args pre-with-body)
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         (flet ((,func (,pre-vars ,pre-with-body ,pre-args)
+                  (destructuring-bind (,vars ,args ,@with-body) `(,,pre-vars ,,pre-args ,@,pre-with-body)
+                    ,@actual-body)))
+           (setf (gethash ',name *with-expanders*) #',func)
+           ,@(when docstring
+               `((setf (documentation ',name 'with) ,docstring)))
+           ',name)))))
 
 (defmacro define-cl-expander (name (vars with-body &rest args) &body body)
   "Define a cl macro. A cl macro controls how a WITH binding form is expanded when a cl name is encountered.

@@ -8,13 +8,14 @@
 Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body-args*) body*)
+  (DEFWITH name (vars args with-body-args*) declaration* body*)
 
   name             ::= symbol
   vars             ::= (var-with-options*)
   var-with-options ::= symbol | (symbol option*)
   option           ::= form
   args             ::= destructuring-lambda-list
+  declaration      ::= declaration-form | docstring
   body             ::= form
 
 The symbol NAME will be available to use inside WITH performing a custom expansion defined by DEFWITH.
@@ -25,6 +26,7 @@ can contain declarations.
 As an example, let's define the with expander MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
   (defwith my-file (vars (filespec &rest options) &body body)
+    "Open a file."
     (with-gensyms (stream)
       `(with-open-file (,stream ,filespec ,@options)
          (multiple-value-bind ,vars ,stream
@@ -38,6 +40,9 @@ Now, using WITH:
   (with ((file (my-file "~/file.txt" :direction :output)))
     (print "Hey!" file))
 
+Finally, note that we put a docstring in MY-FILE. We can retrieve it with DOCUMENTATION:
+
+  (documentation 'my-file 'with)  ;; --> "Open a file."
 `````
 
 <a id="function-clith-with"></a>
