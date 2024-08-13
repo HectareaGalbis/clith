@@ -16,5 +16,6 @@
 ;;   :build-operation "adp-github-op"
 ;;   :depends-on ("clith")
 ;;   :components ((:module "scribble"
-;;                 :components ((:scribble "reference")
+;;                 :components ((:file "package")
+;;                              (:scribble "reference")
 ;;                              (:scribble "README")))))

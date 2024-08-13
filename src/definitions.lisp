@@ -6,63 +6,99 @@
   `(with-accessors ,vars ,instance-form
      ,@body))
 
-(define-cl-expander compilation-unit (vars body &rest options)
+(define-cl-expander compilation-unit (() body &rest options)
   `(with-compilation-unit ,options
-     (multiple-value-bind ,vars nil
-       ,@body)))
+     ,@body))
 
-(define-cl-expander condition-restarts (vars body condition-form restart-form)
+(define-cl-expander condition-restarts (() body condition-form restart-form)
   `(with-condition-restarts ,condition-form ,restart-form
-     (multiple-value-bind ,vars nil
-       ,@body)))
+     ,@body))
 
-(define-cl-expander hash-table-iterator (vars body hash-table)
-  (with-gensyms (name)
-    `(with-hash-table-iterator (,name ,hash-table)
-       (multiple-value-bind ,vars ,name
-         ,@body))))
+(define-cl-expander hash-table-iterator ((name) body hash-table)
+  `(with-hash-table-iterator (,name ,hash-table)
+     ,@body))
 
-(define-cl-expander input-from-string (vars body string &key index start end)
-  (with-gensyms (var)
-    `(with-input-from-string (,var ,string :index ,index :start ,start :end ,end)
-       (multiple-value-bind ,vars ,var
-         ,@body))))
+(define-cl-expander input-from-string ((var) body string &key index start end)
+  `(with-input-from-string (,var ,string :index ,index :start ,start :end ,end)
+     ,@body))
 
-(define-cl-expander open-file (vars body filespec &rest options)
-  (with-gensyms (stream)
-    `(with-open-file (,stream ,filespec ,@options)
-       (multiple-value-bind ,vars ,stream
-         ,@body))))
+(define-cl-expander open-file ((stream) body filespec &rest options)
+  `(with-open-file (,stream ,filespec ,@options)
+     ,@body))
 
-(define-cl-expander open-stream (vars body stream)
-  (with-gensyms (var)
-    `(with-open-stream (,var ,stream)
-       (multiple-value-bind ,vars ,var
-         ,@body))))
+(define-cl-expander open-stream ((var) body stream)
+  `(with-open-stream (,var ,stream)
+     ,@body))
 
-(define-cl-expander output-to-string (vars body &rest args)
-  (with-gensyms (var)
-    `(with-output-to-string (,var ,@args)
-       (multiple-value-bind ,vars ,var
-         ,@body))))
+(define-cl-expander output-to-string ((var) body &rest args)
+  `(with-output-to-string (,var ,@args)
+     ,@body))
 
-(define-cl-expander package-iterator (vars body package-list-form &rest symbol-types)
-  (with-gensyms (name)
-    `(with-package-iterator (,name ,package-list-form ,@symbol-types)
-       (multiple-value-bind ,vars ,name
-         ,@body))))
+(define-cl-expander package-iterator ((name) body package-list-form &rest symbol-types)
+  `(with-package-iterator (,name ,package-list-form ,@symbol-types)
+     ,@body))
 
-(define-cl-expander simple-restart (vars body format-control &rest format-arguments)
-  (with-gensyms (name)
-    `(with-simple-restart (,name ,format-control ,@format-arguments)
-       (multiple-value-bind ,vars ,name
-         ,@body))))
+(define-cl-expander simple-restart ((name) body format-control &rest format-arguments)
+  `(with-simple-restart (,name ,format-control ,@format-arguments)
+     ,@body))
 
 (define-cl-expander slots (vars body instance-form)
   `(with-slots ,vars ,instance-form
      ,@body))
 
-(define-cl-expander standard-io-syntax (vars body)
+(define-cl-expander standard-io-syntax (() body)
   `(with-standard-io-syntax
-     (multiple-value-bind ,vars nil
-       ,@body)))
+     ,@body))
+
+
+(defwith make-broadcast-stream ((stream) (&rest streams) &body body)
+  (with-gensyms (stream-sym)
+    `(let* ((,stream-sym (make-broadcast-stream ,@streams))
+            (,stream ,stream-sym))
+       (unwind-protect
+            (progn ,@body)
+         (close ,stream-sym)))))
+
+(defwith make-concatenated-stream ((stream) (&rest input-streams) &body body)
+  (with-gensyms (stream-sym)
+    `(let* ((,stream-sym (make-concatenated-stream ,@input-streams))
+            (,stream ,stream-sym))
+       (unwind-protect
+            (progn ,@body)
+         (close ,stream-sym)))))
+
+(defwith make-echo-stream ((stream) (input-stream output-stream) &body body)
+  (with-gensyms (stream-sym)
+    `(let* ((,stream-sym (make-concatenated-stream ,input-stream ,output-stream))
+            (,stream ,stream-sym))
+       (unwind-protect
+            (progn ,@body)
+         (close ,stream-sym)))))
+
+(defwith make-string-input-stream ((stream) (string &optional start end) &body body)
+  (with-gensyms (stream-sym)
+    `(let* ((,stream-sym (make-string-input-stream ,string ,start ,end))
+            (,stream ,stream-sym))
+       (unwind-protect
+            (progn ,@body)
+         (close ,stream-sym)))))
+
+(defwith make-string-output-stream ((stream) (&key element-type) &body body)
+  (with-gensyms (stream-sym)
+    `(let* ((,stream-sym (make-string-output-stream :element-type ,element-type))
+            (,stream ,stream-sym))
+       (unwind-protect
+            (progn ,@body)
+         (close ,stream-sym)))))
+
+(defwith make-two-way-stream ((stream) (input-stream output-stream) &body body)
+  (with-gensyms (stream-sym)
+    `(let* ((,stream-sym (make-two-way-stream ,input-stream ,output-stream))
+            (,stream ,stream-sym))
+       (unwind-protect
+            (progn ,@body)
+         (close ,stream-sym)))))
+
+(defwith open ((stream) (filespec &rest options) &body body)
+  `(with-open-file (,stream ,filespec ,@options)
+     ,@body))

@@ -1,5 +1,5 @@
 
-(in-package #:adpgh)
+(in-package #:clith-docs)
 
 @select-output-file["/README.md"]
 
@@ -28,7 +28,7 @@ git clone https://github.com/Hectarea1996/clith.git
 (ql:quickload "clith")
 }
 
-@subheader{Documentation}
+@subheader{Reference}
 
 @itemize[
         @item{@href[:tag reference]}
@@ -36,96 +36,152 @@ git clone https://github.com/Hectarea1996/clith.git
 
 @subheader{Basic usage}
 
-The simplest way to use @fref[clith:with] is like using LET or MULTIPLE-VALUE-BIND:
+The macro @fref[with] uses @code{WITH expanders} simarly @code{setf} uses @code{setf expanders}. These expanders controls how the macro  @fref[with] is expanded.
+
+Let's take a look at the built-in @code{slots} expander. As the name suggest, it will expand into a @code{with-slots} expression:
 
 @example{
-(clith:with ((x 5)
-             ((q r) (floor 45 32)))
-  (+ x q r))
+(defstruct vec2
+  x
+  y)
+
+(let ((start (make-vec2 :x 5 :y 10)))
+  (with (((x y) (slots start)))
+    (+ x y)))
 }
 
-
-But also we can open a file that will be destroyed automatically when exiting the body of @fref[clith:with]:
-
-@example{
-(clith:with ((file (open-file "~/test.txt" :direction :output :if-does-not-exist :create :if-exists :supersede)))
-  (print "Hey!" file))
-}
-
-And the content of the file should be @code{"Hey!"}.
-
-Or we can even take the values of an object:
-
-@example{
-(defclass point ()
-  ((x :initarg :x)
-   (y :initarg :y)))
-
-(clith:with ((start (make-instance 'point :x 5 :y 10))
-             (end   (make-instance 'point :x -3 :y 21))
-             ((x y)           (slots start))
-             (((x2 x) (y2 y)) (slots end)))
-  (+ (* x x2) (* y y2)))
-}
-
-@subheader{Customizing expansion}
-
-When using certain binding form, we can control how @fref[clith:with] is expanded. In order to do this we must use @fref[clith:defwith].
-
-As a simple example, let's define the with expander @code{specials}. It must bind some variables dynamically (via @code{(declare (special var))}).
-
-First, take a look at the @fref[clith:defwith] macro:
+The macro @fref[with] also accepts options for each variable we want to bind. In the above example, what happens if we have two points?
 
 @code-block{
-(clith:defwith specials (vars (&rest vals) &body body)
-  ...)
+(let ((start (make-vec2 :x 5 :y 10))
+      (end   (make-vec2 :x -3 :y -4)))
+  (with (((x y) (slots origin))
+         ((x y) (slots end)))   ;; <-- Name collision!!
+    (+ x y x y)))
 }
 
-The macro @fref[clith:defwith] must receive 2 arguments: The variables used in the @fref[clith:with] binding and the body of the macro. Lastly, we receive the actual arguments of @code{specials}.
+We should specify, as if using @code{with-slots}, that we want to reference the slot @code{x} or @code{y} using another symbol.
 
-The rest of the definition is as follows:
+@example{
+(let ((start (make-vec2 :x 5 :y 10))
+      (end   (make-vec2 :x -3 :y -4)))
+  (with ((((x1 x) (y1 y)) (slots start))
+         (((x2 x) (y2 y)) (slots end)))
+    (+ x1 y1 x2 y2)))
+}
+
+@subheader{Defining a WITH expander}
+
+In order to extend the macro @fref[with] we need to define a @code{WITH expander}. To do so, we use @fref[defwith].
+
+Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. We want to control the expansion of WITH in order to use both functions. Let's define the WITH expander:
 
 @example|{
-(clith:defwith specials (vars (&rest vals) &body body)
-  `(multiple-value-bind ,vars (values ,@vals)
-     (declare (special ,@vars))
-     ,@body))
+(defwith make-window ((window) (title) &body body)
+  "Makes a window that will be destroyed after the end of WITH."
+  (let ((window-var (gensym)))
+    `(let ((,window-var (make-window ,title)))
+       (let ((,window ,window-var))
+         (unwind-protect
+             (progn ,@body)
+           (destroy-window ,window-var))))))
 }|
 
-It is like a regular macro. First we bind the variables, then we declare them as special and lastly we evaluate the body forms.
+This is a common implementation of a 'with-' macro. Note that we specified @code{(window)} to specify that only
+one variable is wanted.
 
-Let's use it:
+Now we can use our expander in WITH:
+
+@code-block{
+(with ((my-window (make-window "My window")))
+  ;; Doing things with the window
+  )
+}
+   
+After the body of @fref[with] is evaluated, @code{my-window} will be destroyed by @code{destroy-window}.
+
+@subheader{Expander's documentation}
+
+The macro @fref[defwith] accepts a docstring that can be retrieved with the function @code{documentation}. Check out again the definition of the expansion of @code{make-window} above. Note that we wrote a docstring.
 
 @example{
-(defun add-special-x-y ()
-  (declare (special x y))
-  (+ x y))
-
-(clith:with (;; ...
-             ((x y) (specials 5 10))
-             ;; ...
-             )
-  ;; ...
-  (add-special-x-y))
+(documentation 'make-window 'with)
 }
 
-In this example, @code{(x y)} is bound to @code{vars} in @fref[clith:defwith], @code{((add-special-x-y))} to @code{body} and @code{(5 10)} to @code{vals}.
-
-Let's see another example:
+We can also @code{setf} the docstring:
 
 @example{
-(clith:with (;; ...
-             (z (specials 5 10))
-             ;; ...
-             )
-  (print z))
+(setf (documentation 'make-window 'with) "Another docstring!")
+(documentation 'make-window 'with)
 }
 
-Note that now we have @code{z} instead of @code{(z)}. Both cases are valid. CLITH makes sure that @code{vars} is always bound to a list of variables. If the user doesn't indicate any variable, then @code{NIL} is bound to @code{vars}.
+
+@subheader{Declarations}
+
+The macro @fref[with] accepts declarations. These declarations are moved to the correct place at expansion time. For example, consider again the example with the points, but this time, we want to ignore two arguments:
+
+@example{
+(let ((start (make-vec2 :x 5 :y 10))
+      (end   (make-vec2 :x -3 :y -4)))
+  (with ((((x1 x) (y1 y)) (slots start))
+         (((x2 x) (y2 y)) (slots end)))
+    (declare (ignore y1 x2))
+    (+ x1 y2)))
+}
+
+Let's see the expanded code:
+
+@example{
+(macroexpand-1 '(with ((((x1 x) (y1 y)) (slots start))
+                       (((x2 x) (y2 y)) (slots end)))
+                  (declare (ignore y1 x2))
+                  (+ x1 y2)))
+}
+
+Observe that every declaration is in the right place. But how this work?
+
+@fref[with] assumes that variables to be bound will be in certain places. Each variable in the declaration is searched over all the places that can contain a variable to be bound. It is searched from bottom to top. When a variable is found, a declaration of that variable is created there.
+
+If you want to know exactly where these places are, check out the syntax of the @fref[with] macro:
+
+@code-block[:lang "text"]{
+  (WITH (binding*) declaration* form*)
+
+  binding          ::= ([vars] form)
+  vars             ::= var | (var-with-options*)
+  var-with-options ::= var | (var var-option*)
+  var-option       ::= form
+}
+
+@code{var} are those places where a declaration can refer to.
 
 @subheader{Built-in WITH expanders}
 
-Every macro from the package @code{common-lisp} whose name starts with @code{with-} has its own expander. We've already seen an example using the expander of @code{with-open-file}. The complete list is:
+The next symbols from the package @code{CL} has a built-in expander:
+
+@itemize[
+
+@item{@code{make-broadcast-stream}}
+
+@item{@code{make-concatenated-stream}}
+
+@item{@code{make-echo-stream}}
+
+@item{@code{make-string-input-stream}}
+
+@item{@code{make-string-output-stream}}
+
+@item{@code{make-two-way-stream}}
+
+@item{@code{open}}
+
+]
+
+Additionally, every macro from the package @code{CL} whose name starts with @code{with-} has its own expander. We've already seen an example using the expander @code{slots}.
+
+Since we cannot define new symbols in the package @code{CL}, these expanders are defined in a special way. @fref[with] will recognize all the symbols (for any package) whose name is equal to the name of the expander.
+
+The complete list is:
 
 @table[
 @row[

@@ -1,4 +1,4 @@
-<a id="header-adp-github-reference"></a>
+<a id="header-clith-docs-reference"></a>
 # Reference
 
 <a id="function-clith-defwith"></a>
@@ -8,13 +8,14 @@
 Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body-args*) declaration* body*)
+  (DEFWITH name (vars args with-body*) declaration* body*)
 
   name             ::= symbol
   vars             ::= (var-with-options*)
   var-with-options ::= symbol | (symbol option*)
   option           ::= form
   args             ::= destructuring-lambda-list
+  with-body        ::= form
   declaration      ::= declaration-form | docstring
   body             ::= form
 
@@ -53,31 +54,23 @@ This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
 
-  binding    ::= var | ([vars] form)
-  vars       ::= var | (list-var*)
-  list-var   ::= var | (var var-option*)
-  var-option ::= form
+  binding          ::= ([vars] form)
+  vars             ::= var | (var-with-options*)
+  var-with-options ::= var | (var var-option*)
+  var-option       ::= form
 
-WITH accepts a list of binding clauses. Each binding clause must be a symbol or a list. Depending of what the
-clause is, WITH's behaeviour is different:
+WITH accepts a list of binding clauses. Each binding clause must be a list. The variables are optional, so we can as clauses lists with one or two elements:
 
-  - A symbol: The symbol is bound to NIL.
+  - A list with one element: That element is a form that must be a WITH expander defined with DEFWITH.
+    In this case, the WITH expander will receive NIL as the list of variables to be bound.
       
-      (with (x) ; <- X is bound to NIL
+      (with (((my-function arg))) ; <- expanded using the expansion of my-function
         ...)
 
-  - A list with one element: That element is a form that will be evaluated unless it is a WITH expander. If it
-    is a with expander defined with DEFWITH, DEFWITH will receive NIL as the list of variables to be bound.
-      
-      (with (((my-function arg))) ; <- evaluated or expanded
-        ...)
+  - A list with two elements: The first element must be a symbol or a list of symbols with or without options.
+    The second element is a form that must be a WITH expander.
 
-  - A list with two elements: The first element must be a symbol, a list of symbols to be bound, or a list
-    of symbols with options. The second element is a form that will be evaluated or expanded.
-
-      (with ((x 1)                                        ; <- X is bound to 1
-             ((a b c) (values 4 5 6)))                    ; <- A, B and C are bound to 4, 5 and 6 respectively.
-             ((member1 (myvar member2))  (slots object))  ; <- MEMBER1 and MYVAR are bound with the values from
+      (with (((member1 (myvar member2))  (slots object))  ; <- MEMBER1 and MYVAR are bound with the values from
                                                                the class members MEMBER1 and MEMBER2 of OBJECT
         ...)
 
@@ -85,26 +78,5 @@ clause is, WITH's behaeviour is different:
     with expander defined with DEFWITH, it will receive (MEMBER1 (MYVAR MEMBER2)) as the variables to be bound,
     but only MEMBER1 and MYVAR must/should be bound.
 
-These forms are the basic features of WITH. But, if you need even more control of what WITH should do, you
-can use expanders. You can define an expander with DEFWITH.
-
-Suppose we have (MAKE-WINDOW TITLE) and (DESTROY-WINDOW WINDOW). We want to control the expansion of WITH 
-in order to use both functions. Let's define the WITH expander:
-
-   (defwith make-window (vars (title) &body body)
-     (let ((window-var (gensym)))
-       `(let ((,window-var (make-window ,title)))
-          (multiple-value-bind ,vars ,window-var
-            ,@body
-            (destroy-window ,window-var)))))
-
-We use MULTIPLE-VALUE-BIND in case the user supply more than 1 variable. Another option could be throw an error.
-
-Now we can use our expander in WITH:
-
-   (with ((my-window (make-window "My window")))
-     ;; Doing things with the window
-     )
- 
-After the body of WITH is evaluated, MY-WINDOW will be destroyed by DESTROY-WINDOW.
+In order to define a WITH expander you must use DEFWITH.
 `````
