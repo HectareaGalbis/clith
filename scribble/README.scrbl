@@ -21,10 +21,9 @@ cd ~/common-lisp
 git clone https://github.com/Hectarea1996/clith.git
 }
 @itemize[
-@item{Quicklisp (Ultralisp):}
+@item{Quicklisp:}
 ]
 @code-block[:lang "common-lisp"]{
-(ql-dist:install-dist "http://dist.ultralisp.org/" :prompt nil)
 (ql:quickload "clith")
 }
 
@@ -34,11 +33,25 @@ git clone https://github.com/Hectarea1996/clith.git
         @item{@href[:tag reference]}
 ]
 
-@subheader{Basic usage}
+@subheader{Getting started}
 
-The macro @fref[with] uses @code{WITH expanders} simarly @code{setf} uses @code{setf expanders}. These expanders controls how the macro  @fref[with] is expanded.
+The macro @fref[with] uses @code{WITH expansions} similarly @code{setf} uses @code{setf expansions}. These expansions control how the macro  @fref[with] is expanded.
 
-Let's take a look at the built-in @code{slots} expander. As the name suggest, it will expand into a @code{with-slots} expression:
+We can define a @code{WITH expansion} using @fref[defwith]. As an example, let's define a @code{WITH expansion} named @code{slots} that should expand to @code{with-slots}.
+
+@example|{
+(defwith slots (vars (instance) &body body)
+  `(with-slots ,vars ,instance
+     ,@body))
+}|
+
+We can check if a symbol denotes a @code{WITH expansion} using @fref[withp]:
+
+@example{
+(withp 'slots)
+}
+
+Now we can use the new expansion like this:
 
 @example{
 (defstruct vec2
@@ -70,11 +83,13 @@ We should specify, as if using @code{with-slots}, that we want to reference the 
     (+ x1 y1 x2 y2)))
 }
 
-@subheader{Defining a WITH expander}
+This works because of how we defined our expansion @code{slots}. The details can be found in the reference: @fref[defwith].
 
-In order to extend the macro @fref[with] we need to define a @code{WITH expander}. To do so, we use @fref[defwith].
+@subheader{Defining a WITH expansion}
 
-Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. We want to control the expansion of WITH in order to use both functions. Let's define the WITH expander:
+In order to extend the macro @fref[with] we need to define a @code{WITH expansion}. To do so, we use @fref[defwith].
+
+Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. We want to control the expansion of WITH in order to use both functions. Let's define the WITH expansion:
 
 @example|{
 (defwith make-window ((window) (title) &body body)
@@ -87,10 +102,9 @@ Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. W
            (destroy-window ,window-var))))))
 }|
 
-This is a common implementation of a 'with-' macro. Note that we specified @code{(window)} to specify that only
-one variable is wanted.
+This is a common implementation of a 'with-' macro. Note that we specified @code{(window)} to specify that only one variable is wanted.
 
-Now we can use our expander in WITH:
+Now we can use our expansion in WITH:
 
 @code-block{
 (with ((my-window (make-window "My window")))
@@ -100,7 +114,7 @@ Now we can use our expander in WITH:
    
 After the body of @fref[with] is evaluated, @code{my-window} will be destroyed by @code{destroy-window}.
 
-@subheader{Expander's documentation}
+@subheader{Expansion's documentation}
 
 The macro @fref[defwith] accepts a docstring that can be retrieved with the function @code{documentation}. Check out again the definition of the expansion of @code{make-window} above. Note that we wrote a docstring.
 
@@ -153,74 +167,8 @@ If you want to know exactly where these places are, check out the syntax of the 
   var-option       ::= form
 }
 
-@code{var} are those places where a declaration can refer to.
+@code{var} are those places where a declaration can be placed.
 
-@subheader{Built-in WITH expanders}
+@subheader{Built-in WITH expansions}
 
-The next symbols from the package @code{CL} has a built-in expander:
-
-@itemize[
-
-@item{@code{make-broadcast-stream}}
-
-@item{@code{make-concatenated-stream}}
-
-@item{@code{make-echo-stream}}
-
-@item{@code{make-string-input-stream}}
-
-@item{@code{make-string-output-stream}}
-
-@item{@code{make-two-way-stream}}
-
-@item{@code{open}}
-
-]
-
-Additionally, every macro from the package @code{CL} whose name starts with @code{with-} has its own expander. We've already seen an example using the expander @code{slots}.
-
-Since we cannot define new symbols in the package @code{CL}, these expanders are defined in a special way. @fref[with] will recognize all the symbols (for any package) whose name is equal to the name of the expander.
-
-The complete list is:
-
-@table[
-@row[
-@cell{CL Standard macro} @cell{WITH expander}
-]
-@row[
-@cell{with-accesors} @cell{accesors}
-]
-@row[
-@cell{with-compilation-unit} @cell{compilation-unit}
-]
-@row[
-@cell{with-condition-restarts} @cell{condition-restarts}
-]
-@row[
-@cell{with-hash-table-iterator} @cell{hash-table-iterator}
-]
-@row[
-@cell{with-input-from-string} @cell{input-from-string}
-]
-@row[
-@cell{with-open-file} @cell{open-file}
-]
-@row[
-@cell{with-open-stream} @cell{open-stream}
-]
-@row[
-@cell{with-output-to-string} @cell{output-to-string}
-]
-@row[
-@cell{with-package-iterator} @cell{package-iterator}
-]
-@row[
-@cell{with-simple-restart} @cell{simple-restart}
-]
-@row[
-@cell{with-slots} @cell{slots}
-]
-@row[
-@cell{with-standard-io-syntax} @cell{standard-io-syntax}
-]
-]
+Clith doesn't provide any built-in expansions. However, you can check out the project @link[:address "https://github.com/HectareaGalbis/clith-std"]{clith-std}.

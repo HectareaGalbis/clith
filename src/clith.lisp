@@ -2,29 +2,8 @@
 (in-package #:clith)
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *with-expanders* (make-hash-table))
-  (defvar *cl-expanders* (make-hash-table :test 'equal)))
+(exp:defexpander with)
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun extract-docstring (body)
-    "Returns the docstring and the body without that docstring."
-    (loop for (expr . rest-body) on body
-          if (and (listp expr) (eq (car expr) 'declare))
-            collect expr into declarations
-          else if (stringp expr)
-                 do (return-from extract-docstring (values expr (append declarations rest-body)))
-          else
-            do (return-from extract-docstring (values nil (append declarations (list expr) rest-body)))))
-
-  (defmethod (setf documentation) (docstring sym (doc-type (eql 'with)))
-    (declare (ignore doc-type))
-    (setf (get sym 'clith::docstring) docstring))
-
-  (defmethod documentation (sym (doc-type (eql 'with)))
-    (declare (ignore doc-type))
-    (get sym 'clith::docstring)))
 
 (defmacro defwith (name (vars args &rest with-body) &body body)
   "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
@@ -46,7 +25,7 @@ The variables to be bound are passed through VARS (VARS will always be a list) a
 to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Note that WITH-BODY
 can contain declarations.
 
-As an example, let's define the with expander MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
+As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
   (defwith my-file (vars (filespec &rest options) &body body)
     \"Open a file.\"
@@ -67,28 +46,13 @@ Finally, note that we put a docstring in MY-FILE. We can retrieve it with DOCUME
 
   (documentation 'my-file 'with)  ;; --> \"Open a file.\""
   (check-type name symbol)
-  (multiple-value-bind (docstring actual-body) (extract-docstring body)
-    (with-gensyms (func pre-vars pre-args pre-with-body)
-      `(eval-when (:compile-toplevel :load-toplevel :execute)
-         (flet ((,func (,pre-vars ,pre-with-body ,pre-args)
-                  (destructuring-bind (,vars ,args ,@with-body) `(,,pre-vars ,,pre-args ,@,pre-with-body)
-                    ,@actual-body)))
-           (setf (gethash ',name *with-expanders*) #',func)
-           ,@(when docstring
-               `((setf (documentation ',name 'with) ,docstring)))
-           ',name)))))
+  `(exp:defexpansion with ,name (,vars ,args ,@with-body)
+     ,@body))
 
-(defmacro define-cl-expander (name (vars with-body &rest args) &body body)
-  "Define a cl macro. A cl macro controls how a WITH binding form is expanded when a cl name is encountered.
-This is a private macro and the user should not use it."
-  (with-gensyms (func pre-vars pre-args)
-    `(eval-when (:compile-toplevel :load-toplevel :execute)
-       (flet ((,func (,pre-vars ,with-body ,pre-args)
-                  (destructuring-bind (,vars ,@args) `(,,pre-vars ,@,pre-args)
-                    ,@body)))
-         (setf (gethash ,(symbol-name name) *cl-expanders*) #',func)
-         ,(symbol-name name)))))
-
+(defun withp (sym)
+  "Checks wether a symbol denotes a WITH expansion."
+  (check-type sym symbol)
+  (exp:expansionp 'with sym))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
@@ -105,9 +69,8 @@ This is a private macro and the user should not use it."
 
   (defun check-form (form)
     (unless (and (listp form)
-                 (or (gethash (symbol-name (car form)) *cl-expanders*)
-                     (gethash (car form) *with-expanders*)))
-      (error "CLITH error: The form must be a with expander but found: ~s" form)))
+                 (exp:expansionp 'with (car form)))
+      (error "CLITH error: The form must be a with expansion but found: ~s" form)))
   
   (defun check-binding (binding)
     (unless (and (listp binding)
@@ -177,18 +140,11 @@ This is a private macro and the user should not use it."
        (let ((vars (ensure-list (car binding))))
          (list vars (cadr binding))))
       (t (error "Expected a binding but the following was found: ~s" binding))))
-
-  (defun cl-macro-binding-p (canonized-binding)
-    (let ((expression (cadr canonized-binding)))
-      (and (listp expression)
-           (gethash (symbol-name (car expression)) *cl-expanders*)
-           t)))
   
   (defun with-macro-binding-p (canonized-binding)
     (let ((expression (cadr canonized-binding)))
       (and (listp expression)
-           (gethash (car expression) *with-expanders*)
-           t)))
+           (exp:expansionp 'with (car expression)))))
 
   (defun extract-declarations (body)
     (loop for (possible-declaration . rest-body) on body
@@ -215,35 +171,14 @@ This is a private macro and the user should not use it."
     (let* ((vars (car binding))
            (macro-name (caadr binding))
            (args (cdadr binding))
-           (func (gethash macro-name *with-expanders*)))
-      (list (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) body) ,args)))))
-
-  (defun make-cl-macro-form (binding body declaration)
-    (let* ((vars (car binding))
-           (macro-name (caadr binding))
-           (args (cdadr binding))
-           (func (gethash (symbol-name macro-name) *cl-expanders*)))
-      (list (apply func `(,vars ,(append (when declaration (list (cons 'declare declaration))) body) ,args)))))
-  
-  ;; (defun make-bind-form (binding body declaration)
-  ;;   (let ((complete-body `(,@(when declaration
-  ;;                              `((declare ,@declaration)))
-  ;;                          ,@body)))
-  ;;     (destructuring-bind (vars expression) binding
-  ;;       (cond
-  ;;         ((null vars)
-  ;;          (cons expression body))
-  ;;         ((= (length vars) 1)
-  ;;          `((let ((,(car vars) ,expression))
-  ;;              ,@complete-body)))
-  ;;         (t
-  ;;          `((multiple-value-bind ,vars ,expression
-  ;;              ,@complete-body)))))))
-
+           (actual-body (if declaration
+                            (cons `(declare ,@declaration) body)
+                            body)))
+      (list (exp:expand 'with `(,macro-name ,vars ,args ,@actual-body)))))
 
   (defun make-with-form (bindings body binding-declarations body-declarations)
     (if (null bindings)
-        
+
         (if body-declarations
             (values `((locally
                           (declare ,@body-declarations)
@@ -251,7 +186,7 @@ This is a private macro and the user should not use it."
                     binding-declarations)
             (values body
                     binding-declarations))
-        
+
         (let ((binding (car bindings))
               (rest-bindings (cdr bindings)))
           (multiple-value-bind (inner-form rest-declarations)
@@ -259,14 +194,10 @@ This is a private macro and the user should not use it."
             (multiple-value-bind (binding-declaration new-rest-declarations)
                 (split-declarations (list binding) rest-declarations)
               (values (cond
-                        ((cl-macro-binding-p binding)
-                         (make-cl-macro-form binding inner-form binding-declaration))
                         ((with-macro-binding-p binding)
                          (make-with-macro-form binding inner-form binding-declaration))
                         (t
-                         (error "CLITH error: Expected a valid binding but found: ~s" binding)
-                         ;; (make-bind-form binding inner-form binding-declaration)
-                         ))
+                         (error "CLITH error: Expected a valid binding but found: ~s" binding)))
                       new-rest-declarations)))))))
 
 
@@ -282,24 +213,24 @@ This is a private macro and the user should not use it."
 
 WITH accepts a list of binding clauses. Each binding clause must be a list. The variables are optional, so we can as clauses lists with one or two elements:
 
-  - A list with one element: That element is a form that must be a WITH expander defined with DEFWITH.
-    In this case, the WITH expander will receive NIL as the list of variables to be bound.
+  - A list with one element: That element is a form that must be a WITH expansion defined with DEFWITH.
+    In this case, the WITH expansion will receive NIL as the list of variables to be bound.
       
       (with (((my-function arg))) ; <- expanded using the expansion of my-function
         ...)
 
   - A list with two elements: The first element must be a symbol or a list of symbols with or without options.
-    The second element is a form that must be a WITH expander.
+    The second element is a form that must be a WITH expansion.
 
       (with (((member1 (myvar member2))  (slots object))  ; <- MEMBER1 and MYVAR are bound with the values from
                                                                the class members MEMBER1 and MEMBER2 of OBJECT
         ...)
 
     Here, MEMBER2 is an option of MYVAR. Options can be of any form, not just symbols. As SLOTS is a
-    with expander defined with DEFWITH, it will receive (MEMBER1 (MYVAR MEMBER2)) as the variables to be bound,
+    with expansion defined with DEFWITH, it will receive (MEMBER1 (MYVAR MEMBER2)) as the variables to be bound,
     but only MEMBER1 and MYVAR must/should be bound.
 
-In order to define a WITH expander you must use DEFWITH."
+In order to define a WITH expansion you must use DEFWITH."
   (check-bindings bindings)
   (let ((canonized-bindings (mapcar #'canonize-binding bindings)))
     (multiple-value-bind (declarations actual-body) (extract-declarations body)

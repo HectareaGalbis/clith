@@ -24,7 +24,7 @@ The variables to be bound are passed through VARS (VARS will always be a list) a
 to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Note that WITH-BODY
 can contain declarations.
 
-As an example, let's define the with expander MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
+As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
   (defwith my-file (vars (filespec &rest options) &body body)
     "Open a file."
@@ -61,22 +61,29 @@ This macro has the following systax:
 
 WITH accepts a list of binding clauses. Each binding clause must be a list. The variables are optional, so we can as clauses lists with one or two elements:
 
-  - A list with one element: That element is a form that must be a WITH expander defined with DEFWITH.
-    In this case, the WITH expander will receive NIL as the list of variables to be bound.
+  - A list with one element: That element is a form that must be a WITH expansion defined with DEFWITH.
+    In this case, the WITH expansion will receive NIL as the list of variables to be bound.
       
       (with (((my-function arg))) ; <- expanded using the expansion of my-function
         ...)
 
   - A list with two elements: The first element must be a symbol or a list of symbols with or without options.
-    The second element is a form that must be a WITH expander.
+    The second element is a form that must be a WITH expansion.
 
       (with (((member1 (myvar member2))  (slots object))  ; <- MEMBER1 and MYVAR are bound with the values from
                                                                the class members MEMBER1 and MEMBER2 of OBJECT
         ...)
 
     Here, MEMBER2 is an option of MYVAR. Options can be of any form, not just symbols. As SLOTS is a
-    with expander defined with DEFWITH, it will receive (MEMBER1 (MYVAR MEMBER2)) as the variables to be bound,
+    with expansion defined with DEFWITH, it will receive (MEMBER1 (MYVAR MEMBER2)) as the variables to be bound,
     but only MEMBER1 and MYVAR must/should be bound.
 
-In order to define a WITH expander you must use DEFWITH.
+In order to define a WITH expansion you must use DEFWITH.
+`````
+
+<a id="function-clith-withp"></a>
+#### Function: clith:withp (sym)
+
+`````text
+Checks wether a symbol denotes a WITH expansion.
 `````

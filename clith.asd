@@ -3,12 +3,11 @@
   :author "Héctor Galbis Sanchis"
   :description "Common Lisp wITH macro. A general WITH macro."
   :license "MIT"
-  :depends-on ("alexandria")
+  :depends-on ("alexandria" "expanders")
   :components ((:module "src"
                 :serial t
                 :components ((:file "package")
-	                     (:file "clith")
-                             (:file "definitions")))))
+	                     (:file "clith")))))
 
 
 ;; (defsystem "clith/docs"
