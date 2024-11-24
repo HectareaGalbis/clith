@@ -168,7 +168,3 @@ If you want to know exactly where these places are, check out the syntax of the 
 }
 
 @code{var} are those places where a declaration can be placed.
-
-@subheader{Built-in WITH expansions}
-
-Clith doesn't provide any built-in expansions. However, you can check out the project @link[:address "https://github.com/HectareaGalbis/clith-std"]{clith-std}.

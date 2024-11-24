@@ -1,23 +1,22 @@
 
 
-<a id="header-adp-github-headertag549"></a>
+<a id="header-adp-github-headertag284"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
 This library defines the macro [clith\:with](/docs/scribble/reference.md#function-clith-with)\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\, and lastly the objects are destroyed automatically\.
 
-* [Common Lisp wITH](/README.md#header-adp-github-headertag549)
-  * [Installation](/README.md#header-adp-github-headertag550)
-  * [Reference](/README.md#header-adp-github-headertag551)
-  * [Getting started](/README.md#header-adp-github-headertag552)
-  * [Defining a WITH expansion](/README.md#header-adp-github-headertag564)
-  * [Expansion\'s documentation](/README.md#header-adp-github-headertag569)
-  * [Declarations](/README.md#header-adp-github-headertag578)
-  * [Built\-in WITH expansions](/README.md#header-adp-github-headertag589)
+* [Common Lisp wITH](/README.md#header-adp-github-headertag284)
+  * [Installation](/README.md#header-adp-github-headertag285)
+  * [Reference](/README.md#header-adp-github-headertag286)
+  * [Getting started](/README.md#header-adp-github-headertag287)
+  * [Defining a WITH expansion](/README.md#header-adp-github-headertag299)
+  * [Expansion\'s documentation](/README.md#header-adp-github-headertag302)
+  * [Declarations](/README.md#header-adp-github-headertag311)
 
 
-<a id="header-adp-github-headertag550"></a>
+<a id="header-adp-github-headertag285"></a>
 ## Installation
 
 * Manual\:
@@ -32,13 +31,13 @@ git clone https://github.com/Hectarea1996/clith.git
 (ql:quickload "clith")
 `````
 
-<a id="header-adp-github-headertag551"></a>
+<a id="header-adp-github-headertag286"></a>
 ## Reference
 
 * [Reference](/docs/scribble/reference.md#header-clith-docs-reference)
 
 
-<a id="header-adp-github-headertag552"></a>
+<a id="header-adp-github-headertag287"></a>
 ## Getting started
 
 The macro [clith\:with](/docs/scribble/reference.md#function-clith-with) uses ``` WITH expansions ``` similarly ``` setf ``` uses ``` setf expansions ```\. These expansions control how the macro  [clith\:with](/docs/scribble/reference.md#function-clith-with) is expanded\.
@@ -103,7 +102,7 @@ We should specify\, as if using ``` with-slots ```\, that we want to reference t
 
 This works because of how we defined our expansion ``` slots ```\. The details can be found in the reference\: [clith\:defwith](/docs/scribble/reference.md#function-clith-defwith)\.
 
-<a id="header-adp-github-headertag564"></a>
+<a id="header-adp-github-headertag299"></a>
 ## Defining a WITH expansion
 
 In order to extend the macro [clith\:with](/docs/scribble/reference.md#function-clith-with) we need to define a ``` WITH expansion ```\. To do so\, we use [clith\:defwith](/docs/scribble/reference.md#function-clith-defwith)\.
@@ -136,7 +135,7 @@ Now we can use our expansion in WITH\:
 
 After the body of [clith\:with](/docs/scribble/reference.md#function-clith-with) is evaluated\, ``` my-window ``` will be destroyed by ``` destroy-window ```\.
 
-<a id="header-adp-github-headertag569"></a>
+<a id="header-adp-github-headertag302"></a>
 ## Expansion\'s documentation
 
 The macro [clith\:defwith](/docs/scribble/reference.md#function-clith-defwith) accepts a docstring that can be retrieved with the function ``` documentation ```\. Check out again the definition of the expansion of ``` make-window ``` above\. Note that we wrote a docstring\.
@@ -159,7 +158,7 @@ We can also ``` setf ``` the docstring\:
 `````
 
 
-<a id="header-adp-github-headertag578"></a>
+<a id="header-adp-github-headertag311"></a>
 ## Declarations
 
 The macro [clith\:with](/docs/scribble/reference.md#function-clith-with) accepts declarations\. These declarations are moved to the correct place at expansion time\. For example\, consider again the example with the points\, but this time\, we want to ignore two arguments\:
@@ -212,8 +211,3 @@ var-option       ::= form
 `````
 
 ``` var ``` are those places where a declaration can be placed\.
-
-<a id="header-adp-github-headertag589"></a>
-## Built\-in WITH expansions
-
-Clith doesn\'t provide any built\-in expansions\. However\, you can check out the project [clith\-std](https://github.com/HectareaGalbis/clith-std)\.
