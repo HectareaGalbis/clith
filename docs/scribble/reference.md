@@ -1,8 +1,24 @@
-<a id="header-clith-docs-reference"></a>
+<a id="TITLE:CLITH-DOCS:REFERENCE"></a>
 # Reference
 
-<a id="function-clith-defwith"></a>
-#### Macro: clith:defwith (name (vars args &rest with-body) &body body)
+* [API reference](/docs/scribble/reference.md#TITLE:CLITH-DOCS:TAG1)
+* [WITH expansions](/docs/scribble/reference.md#TITLE:CLITH-DOCS:TAG5)
+  * [Common Lisp symbols](/docs/scribble/reference.md#TITLE:CLITH-DOCS:CL-SYMBOLS)
+  * [Common Lisp WITH\- macros](/docs/scribble/reference.md#TITLE:CLITH-DOCS:CL-MACROS)
+
+
+
+<a id="TITLE:CLITH-DOCS:TAG1"></a>
+## API reference
+
+* [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG4)
+* [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG2)
+* [clith\:withp](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG3)
+
+
+<a id="FUNCTION:CLITH:DEFWITH"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG4"></a>
+#### Macro: clith\:defwith \(name \(vars args \&rest with\-body\) \&body body\)
 
 `````text
 Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
@@ -46,8 +62,9 @@ Finally, note that we put a docstring in MY-FILE. We can retrieve it with DOCUME
   (documentation 'my-file 'with)  ;; --> "Open a file."
 `````
 
-<a id="function-clith-with"></a>
-#### Macro: clith:with (bindings &body body)
+<a id="FUNCTION:CLITH:WITH"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG2"></a>
+#### Macro: clith\:with \(bindings \&body body\)
 
 `````text
 This macro has the following systax:
@@ -81,9 +98,47 @@ WITH accepts a list of binding clauses. Each binding clause must be a list. The 
 In order to define a WITH expansion you must use DEFWITH.
 `````
 
-<a id="function-clith-withp"></a>
-#### Function: clith:withp (sym)
+<a id="FUNCTION:CLITH:WITHP"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG3"></a>
+#### Function: clith\:withp \(sym\)
 
 `````text
 Checks wether a symbol denotes a WITH expansion.
 `````
+
+
+<a id="TITLE:CLITH-DOCS:TAG5"></a>
+## WITH expansions
+
+<a id="TITLE:CLITH-DOCS:CL-SYMBOLS"></a>
+### Common Lisp symbols
+
+The following Common Lisp functions have a ```WITH expansion```\:
+
+* ```make-broadcast-stream```
+* ```make-concatenated-stream```
+* ```make-echo-stream```
+* ```make-string-input-stream```
+* ```make-string-output-stream```
+* ```make-synonym-stream```
+* ```make-two-way-stream```
+* ```open```
+
+
+<a id="TITLE:CLITH-DOCS:CL-MACROS"></a>
+### Common Lisp WITH\- macros
+
+The following symbols have a ```WITH expansion```\. They are listed with their respective ```WITH-``` macro\:
+
+<table>
+<tr>
+<td>accessors</td><td>with-accessors</td></tr><tr>
+<td>compilation-unit</td><td>with-compilation-unit</td></tr><tr>
+<td>condition-restarts</td><td>with-condition-restarts</td></tr><tr>
+<td>hash-table-iterator</td><td>with-hash-table-iterator</td></tr><tr>
+<td>input-from-string</td><td>with-input-from-string</td></tr><tr>
+<td>output-to-string</td><td>with-output-to-string</td></tr><tr>
+<td>package-iterator</td><td>with-package-iterator</td></tr><tr>
+<td>simple-restart</td><td>with-simple-restart</td></tr><tr>
+<td>slots</td><td>with-slots</td></tr><tr>
+<td>standard-io-syntax</td><td>with-standard-io-syntax</td></tr></table>

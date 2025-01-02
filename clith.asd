@@ -7,12 +7,13 @@
   :components ((:module "src"
                 :serial t
                 :components ((:file "package")
-	                     (:file "clith")))))
+	                     (:file "clith")
+                             (:file "definitions")))))
 
 
 ;; (defsystem "clith/docs"
 ;;   :defsystem-depends-on ("adp-github")
-;;   :build-operation "adp-github-op"
+;;   :class :adp-github
 ;;   :depends-on ("clith")
 ;;   :components ((:module "scribble"
 ;;                 :components ((:file "package")
