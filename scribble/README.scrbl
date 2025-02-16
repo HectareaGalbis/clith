@@ -7,7 +7,7 @@
 
 Welcome to Clith!
 
-This library defines the macro @fref[clith:with]. It allows you to create some objects, bind them to some variables, evaluate some expressions using these variables, and lastly the objects are destroyed automatically.
+This library defines the macro @fref[clith:with]. It allows you to create some objects, bind them to some variables, evaluate some expressions using these variables. Once the process is complete, the objects are automatically destroyed.
 
 @table-of-contents[]
 
@@ -35,9 +35,7 @@ git clone https://github.com/Hectarea1996/clith.git
 
 @subtitle{Getting started}
 
-The macro @fref[with] uses @code{WITH expansions} in a similarly way to @code{setf}. These expansions control how the macro  @fref[with] is expanded.
-
-Every common lisp function that creates an object that should be closed at the end has a @code{WITH expansion}. For example, functions like @clref[open] or @clref[make-two-way-stream] have a @code{WITH expansion}. See all the function in the @tref[cl-symbols]{reference}.
+The macro @fref[with] uses @code{WITH expansions} in a similar way to @code{setf}. These expansions control how the macro  @fref[with] is expanded.
 
 @example{
 (let (some-stream)
@@ -49,34 +47,12 @@ Every common lisp function that creates an object that should be closed at the e
   (format t "Stream opened after? ~s" (open-stream-p some-stream)))
 }
 
-On the other hand, clith defines new symbols for each common lisp @code{with-} macro. Examples are @code{package-iterator} or @code{slots}. See all the macros in the @tref[cl-macros]{reference}.
+Every Common Lisp function that creates an object that should be closed/destroyed at the end has a @code{WITH expansion} defined by @code{CLITH}. For example, functions like @clref[open] or @clref[make-two-way-stream] have a @code{WITH expansion}. See all the functions in the @tref[cl-symbols]{reference}.
+
+Also, we can check if a symbol denotes a @code{WITH expansion} using @fref[withp]:
 
 @example{
-(defstruct vec2
-  x
-  y)
-
-(let ((start (make-vec2 :x 5 :y 10)))
-  (with (((x y) (slots start)))
-    (+ x y)))
-}
-
-The macro @fref[with] can accept optional arguments for each slot:
-
-@example{
-(let ((start (make-vec2 :x 5 :y 10))
-      (end   (make-vec2 :x -3 :y -4)))
-  (with ((((x1 x) (y1 y)) (slots start))
-         (((x2 x) (y2 y)) (slots end)))
-    (+ x1 y1 x2 y2)))
-}
-
-Here, the slot @code{x1} is receiving the argument @code{x}. Each @code{WITH expansion} is responsible to manage these arguments.
-
-Lastly, we can check if a symbol denotes a @code{WITH expansion} using @fref[withp]:
-
-@example{
-(withp 'slots)
+(withp 'open)
 }
 
 @subtitle{Defining a WITH expansion}
@@ -86,7 +62,7 @@ In order to extend the macro @fref[with] we need to define a @code{WITH expansio
 Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. We want to control the expansion of WITH in order to use both functions. Let's define the WITH expansion:
 
 @example|{
-(defwith make-window ((window) (title) &body body)
+(defwith make-window ((window) (title) body)
   "Makes a window that will be destroyed after the end of WITH."
   (let ((window-var (gensym)))
     `(let ((,window-var (make-window ,title)))
@@ -98,7 +74,7 @@ Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. W
 
 This is a common implementation of a 'with-' macro. Note that we specified @code{(window)} to specify that only one variable is wanted.
 
-Now we can use our expansion in WITH:
+Now we can use our expansion:
 
 @code-block{
 (with ((my-window (make-window "My window")))
@@ -106,7 +82,7 @@ Now we can use our expansion in WITH:
   )
 }
    
-After the evaluation of with's body, @code{my-window} will be destroyed by @code{destroy-window}.
+After the evaluation of the body, @code{my-window} will be destroyed by @code{destroy-window}.
 
 @subtitle{Expansion's documentation}
 
@@ -126,39 +102,23 @@ We can also @code{setf} the docstring:
 
 @subtitle{Declarations}
 
-The macro @fref[with] accepts declarations. These declarations are moved to the correct place at expansion time. For example, consider again the example with the points, but this time, we want to ignore two arguments:
+The macro @fref[with] accepts declarations. These declarations are moved to the correct place at expansion time. For example, imagine we want to open two windows, but only one variable will be used. The other one must be ignored:
 
-@example{
-(let ((start (make-vec2 :x 5 :y 10))
-      (end   (make-vec2 :x -3 :y -4)))
-  (with ((((x1 x) (y1 y)) (slots start))
-         (((x2 x) (y2 y)) (slots end)))
-    (declare (ignore y1 x2))
-    (+ x1 y2)))
+@code-block[:lang "common-lisp"]{
+(with ((w1 (make-window "Window 1"))
+       (w2 (make-window "Window 2")))
+  (declare (ignore w1))
+  (print "Hello world!")
+)
 }
 
 Let's see the expanded code:
 
 @example{
-(macroexpand-1 '(with ((((x1 x) (y1 y)) (slots start))
-                       (((x2 x) (y2 y)) (slots end)))
-                  (declare (ignore y1 x2))
-                  (+ x1 y2)))
+(macroexpand-1 '(with ((w1 (make-window "Window 1"))
+                       (w2 (make-window "Window 2")))
+                  (declare (ignore w1))
+                  (print "Hello world!")))
 }
 
-Observe that every declaration is in the right place. But how this work?
-
-@fref[with] assumes that symbols to be bound will be in certain places. Each symbol in the declaration is searched over all the places that can contain a symbol to be bound. It is searched from bottom to top. When a symbol is found, a declaration of that symbol is created there.
-
-If you want to know exactly where these places are, check out the syntax of the @fref[with] macro:
-
-@code-block[:lang "text"]{
-  (WITH (binding*) declaration* form*)
-
-  binding          ::= ([vars] form)
-  vars             ::= var | (var-with-options*)
-  var-with-options ::= var | (var var-option*)
-  var-option       ::= form
-}
-
-@code{var} are those places where a declaration can be placed.
+Observe that the declaration is in the right place. Every symbol that can be bound is a candidate for a declaration. If more that one candidate is found (same symbol appearing more than once) the last one is selected.
