@@ -5,23 +5,48 @@
 (exp:defexpander with)
 
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+
+  (defun check-vars (vars extendedp)
+    "
+Checks the syntax of variables.
+If extendedp, it is accepted to have options after a variable.
+I.e. if extendedp, a variable can be a list with a symbol followed by other forms."
+    (check-type vars (or symbol list))
+    (when (listp vars)
+      (loop for var in vars
+            if (not extendedp)
+              do (check-type var symbol)
+            else
+              do (check-type var (or symbol list))
+                 (when (listp var)
+                   (check-type (car var) symbol)))))
+  
+  (defun check-defwith (name vars with-body)
+    (check-type name symbol)
+    (check-vars vars t)
+    (check-type with-body symbol)))
+
+
 (defmacro defwith (name (vars args with-body) &body body)
-  "Define a WITH macro. A WITH macro controls how a WITH binding form is expanded. This macro has
+  "Define a WITH expansion. A WITH expansion controls how the macro WITH is expanded. This macro has
 the following syntax:
 
   (DEFWITH name (vars args with-body) declaration* body*)
 
   name             ::= symbol
-  vars             ::= symbol | (symbol*)
+  vars             ::= symbol | (var-with-options*)
+  var-with-options ::= symbol | (symbol option*)
+  option           ::= destructuring-lambda-argument
   args             ::= destructuring-lambda-list
   with-body        ::= symbol
   declaration      ::= declaration-form | docstring
   body             ::= form
 
-The symbol NAME will be available to use inside WITH expanding to the value returned by BODY.
+When using (NAME ARGS*) inside the macro WITH, it will expand to the value returned by DEFWITH.
 The variables to be bound are passed through VARS (VARS will always be a list) and the arguments passed
-to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Note that WITH-BODY
-can contain declarations.
+to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Keep in mind that
+WITH-BODY can contain declarations.
 
 As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
@@ -33,6 +58,7 @@ As an example, let's define the with expansion MY-FILE. We will make WITH to be 
            ,@body))))
 
 As VARS is always a list, we can use MULTIPLE-VALUE-BIND in case additional variables are passed.
+Also, we are assuming here that no additional options are passed with the variables to be bound.
 
 Now, using WITH:
 
@@ -42,12 +68,7 @@ Now, using WITH:
 Finally, note that we put a docstring when we defined MY-FILE. We can retrieve it with DOCUMENTATION:
 
   (documentation 'my-file 'with)  ;; --> \"Open a file.\""
-  (check-type name symbol)
-  (check-type with-body symbol)
-  (unless (or (symbolp vars)
-              (and (listp vars)
-                   (every #'symbolp vars)))
-    (error "Expected a symbol or a list of symbols but found: ~s" vars))
+  (check-defwith name vars with-body)
   `(exp:defexpansion with ,name (,vars ,args ,with-body)
      ,@body))
 
@@ -58,39 +79,35 @@ Finally, note that we put a docstring when we defined MY-FILE. We can retrieve i
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (defun check-variables (vars)
-    "Checks the syntax of binding variables."
-    (unless (or (symbolp vars)
-                (and (listp vars)
-                     (every #'symbolp vars)))
-      (error "CLITH error: The vars to be bound must be a symbol or a list of symbols but found: ~s"
-             vars)))
-
-  (defun check-form (form)
-    "Checks the syntax of the binding form."
-    (unless (and (listp form)
-                 (exp:expansionp 'with (car form)))
-      (error "CLITH error: The form must be a with expansion but found: ~s" form)))
+  (defun expand-binding-expression (expression env)
+    "Returns the actual expression to be used inside a binding clause."
+    (if (and (listp expression) (eq (car expression) 'with))
+        expression
+        (macroexpand-1 expression env)))
   
-  (defun check-binding (binding)
+  (defun with-expansion-p (expression env)
+    "Checks if a expression is a with expansion."
+    (let ((actual-expression (expand-binding-expression expression env)))
+      (and (listp actual-expression)
+           (exp:expansionp 'with (car actual-expression)))))
+  
+  (defun check-binding (binding env)
     "Checks the syntax of a binding clause."
-    (unless (and (listp binding)
-                 (not (null binding))
-                 (<= (length binding) 2))
+    (unless (or (symbolp binding)
+                (and (listp binding)
+                     (not (null binding))
+                     (<= (length binding) 2)))
       (error "CLITH error: Expected a binding form but ~s was found." binding))
-    (case (length binding)
-      (1
-       (check-form (car binding)))
-      (2
-       (check-variables (car binding))
-       (check-form (cadr binding)))))
+    (when (and (listp binding)
+               (= (length binding) 2))
+      (check-vars (car binding) (with-expansion-p (cadr binding) env))))
 
-  (defun check-bindings (bindings)
+  (defun check-bindings (bindings env)
     "Checks the syntax of binding clauses."
     (unless (listp bindings)
       (error "CLITH error: Expected a list of bindings but ~s was found." bindings))
     (loop for binding in bindings
-	  do (check-binding binding)))
+	  do (check-binding binding env)))
 
   (defun var-declaration-p (id)
     "Checks if ID is an identifier of a variable declaration."
@@ -144,19 +161,21 @@ The latter are the rest of declarations.
                       new-rest-declarations))))
         (values nil declarations)))
 
-  (defun canonize-binding (binding)
+  (defun canonize-binding (binding env)
     "
 Transforms BINDING to a form that is more apropiate to process.
 In particular, turns BINDING into a list of two elements.
-The former element is a list the binding symbols written by user.
+The former element is a list of the binding symbols written by user.
 The latter is the form that returns the values which variables will be bound to.
 "
     (cond
+      ((symbolp binding)
+       (list (list binding) nil))
       ((= (length binding) 1)
-       (list nil (car binding)))
+       (list nil (expand-binding-expression (car binding) env)))
       ((= (length binding) 2)
        (let ((vars (ensure-list (car binding))))
-         (list vars (cadr binding))))))
+         (list vars (expand-binding-expression (cadr binding) env))))))
 
   (defun extract-declarations (body)
     "Extracts the declarations of BODY."
@@ -175,29 +194,39 @@ The latter are the rest of declarations.
               (rest-bindings (cdr canonized-bindings)))
           (multiple-value-bind (binding-declarations rest-declarations)
               (split-declarations rest-bindings declarations)
-            (let ((syms (car binding)))
+            (let ((syms (mapcar (lambda (x) (car (ensure-list x))) (car binding))))
               (multiple-value-bind (new-binding-declarations new-rest-declarations)
                   (extract-var-declarations syms rest-declarations)
                 (values (append new-binding-declarations binding-declarations)
                         new-rest-declarations)))))))
 
+  (defun with-macro-binding-p (canonized-binding env)
+    "Checks if a binding has a custom expansion."
+    (with-expansion-p (cadr canonized-binding) env))
+  
   (defun expand-with-expansion (macro-name vars args body)
     "Expands a WITH expansion."
     (handler-case (exp:expand 'with `(,macro-name ,vars ,args ,body))
       (error (c)
         (error "Error expanding the WITH expansion ~a:~%~a" macro-name c))))
 
-  (defun make-with-macro-form (binding body declaration)
+  (defun make-with-macro-form (binding body declaration env)
     "Expands a WITH expansion given its BINDING, its BODY and its DECLARATION."
-    (let* ((vars (car binding))
-           (macro-name (caadr binding))
-           (args (cdadr binding))
-           (actual-body (if declaration
-                            (cons `(declare ,@declaration) body)
-                            body)))
-      (list (expand-with-expansion macro-name vars args actual-body))))
+    (let ((actual-body (if declaration
+                           (cons `(declare ,@declaration) body)
+                           body)))
+      (let ((vars (car binding)))
+        (if (with-macro-binding-p binding env)
+            (let ((macro-name (caadr binding))
+                  (args (cdadr binding)))
+              (list (expand-with-expansion macro-name vars args actual-body)))
+            (let ((expression (cadr binding)))
+              (if vars
+                  (list `(multiple-value-bind ,vars ,expression
+                           ,@actual-body))
+                  (cons expression actual-body)))))))
 
-  (defun make-with-form (bindings body binding-declarations body-declarations)
+  (defun make-with-form (bindings body binding-declarations body-declarations env)
     "Returns the WITH macro expansion."
     (if (null bindings)
 
@@ -212,45 +241,81 @@ The latter are the rest of declarations.
         (let ((binding (car bindings))
               (rest-bindings (cdr bindings)))
           (multiple-value-bind (inner-form rest-declarations)
-              (make-with-form rest-bindings body binding-declarations body-declarations)
+              (make-with-form rest-bindings body binding-declarations body-declarations env)
             (multiple-value-bind (binding-declaration new-rest-declarations)
                 (split-declarations (list binding) rest-declarations)
-              (values (make-with-macro-form binding inner-form binding-declaration)
+              (values (make-with-macro-form binding inner-form binding-declaration env)
                       new-rest-declarations)))))))
 
 
-(defmacro with (bindings &body body)
+(defmacro with (bindings &body body &environment env)
   "This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
 
-  binding          ::= ([vars] (with-expansion args*))
-  vars             ::= symbol | (symbol*)
-  with-expansion   ::= symbol
-  args             ::= form
+  binding          ::= symbol | ([vars] form)
+  vars             ::= symbol | (var-with-options*)
+  var-with-options ::= symbol | (symbol var-option*)
+  var-option       ::= form
 
-WITH accepts a list of binding clauses. Each binding clause must be a list. The variables are optional, so we can have as clauses lists with one or two elements:
+WITH accepts a list of binding clauses. Each binding clause can be a symbol or a list. Depending on
+this, the behaeviour of WITH is slightly different:
 
-  - A list with one element: That element is a form that must be a WITH expansion defined with DEFWITH.
-    In this case, the WITH expansion will receive NIL as the list of variables to be bound.
-      
-      (with (((foo arg))) ; <- expanded using the expansion of FOO.
+  - A symbol: The symbol is bound to NIL.
+
+    (with (x)  ; X is bound to NIL
+      ...)
+
+  - A list with one element. That element can be a WITH expansion or not:
+
+    * A WITH expansion: The form is expanded according to DEFWITH. In this case,
+      the WITH expansion will receive NIL as the list of variables to be bound.
+
+      (with (((init-video-system)))  ; Possible expansion that should finalize the video system at the end
+        ;; Doing video stuff
+        )
+
+    * Otherwise: The form is placed untouched. It will be evaluated normally.
+
+      (with (((print 3)))  ; Just prints 3
         ...)
 
-  - A list with two elements: The first element must be a symbol or a list of symbols.
-    The second element is a form that must be a WITH expansion.
+  - A list with two elements: The first element must be a symbol or a list of symbols with
+    or without options. The second element is a form that can be a WITH expansion:
 
-      (with (((var1 var2) (bar arg1 arg2)))  ; <- VAR1 and VAR2 are bound with the values from
-                                                  the WITH expansion BAR.
+    * A WITH expansion: The form is expanded according to DEFWITH.
+
+      (with ((my-file (open \"~/my-file.txt\")))  ; Expanded to WITH-OPEN-FILE
         ...)
 
-In order to define a WITH expansion you must use DEFWITH."
-  (check-bindings bindings)
-  (let ((canonized-bindings (mapcar #'canonize-binding bindings)))
+    * Otherwise: The form is placed into a MULTIPLE-VALUE-BIND expression.
+
+      (with ((x 3)
+             ((y z) (floor 4 5)))  ; Forms placed into MULTIPLE-VALUE-BIND
+        ...)
+
+Binding clauses that uses a WITH expansion accepts an extended syntax. Each variable can have options.
+These options should be used inside DEFWITH to control the expansion with better precision:
+
+      (defwith slots (vars (object) body)
+        `(with-slots ,vars ,object
+           ,@body))
+
+      (defstruct 3d-vector x y z)
+
+      (with ((v (make-3d-vector :x 1 :y 2 :z 3))
+             ((x (up y) z) (slots v)))
+        (+ x up z))
+
+Macros and symbol-macros are treated specially. If a macro or symbol-macro is used, they
+will be expanded with MACROEXPAND-1 and its result is the form, or WITH expansion, this macro uses."
+  (check-bindings bindings env)
+  (let ((canonized-bindings (mapcar (lambda (binding) (canonize-binding binding env)) bindings)))
     (multiple-value-bind (declarations actual-body) (extract-declarations body)
       (multiple-value-bind (binding-declarations body-declarations)
           (split-declarations canonized-bindings declarations)
-        (let ((with-form (make-with-form canonized-bindings actual-body binding-declarations body-declarations)))
-          (if (= (length with-form) 1)
-              (car with-form)
-              (cons 'progn with-form)))))))
+        (let ((with-form (make-with-form canonized-bindings actual-body binding-declarations body-declarations env)))
+          (case (length with-form)
+            (0 nil)
+            (1 (car with-form))
+            (t (cons 'progn with-form))))))))

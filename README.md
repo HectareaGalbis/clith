@@ -1,21 +1,78 @@
 
 
-<a id="TITLE:CLITH-DOCS:TAG64"></a>
+<a id="TITLE:CLITH-DOCS:TAG5"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
-This library defines the macro [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH)\. It allows you to create some objects\, bind them to some variables\, evaluate some expressions using these variables\. Once the process is complete\, the objects are automatically destroyed\.
+* [Introduction](/README.md#TITLE:CLITH-DOCS:TAG6)
+* [Installation](/README.md#TITLE:CLITH-DOCS:TAG7)
+* [Reference](/README.md#TITLE:CLITH-DOCS:TAG8)
+* [Getting started](/README.md#TITLE:CLITH-DOCS:TAG9)
+* [Defining a WITH expansion](/README.md#TITLE:CLITH-DOCS:TAG10)
+  * [Simple example\: MAKE\-WINDOW](/README.md#TITLE:CLITH-DOCS:TAG11)
+  * [No need to return a value\: INIT\-SUBSYSTEM](/README.md#TITLE:CLITH-DOCS:TAG12)
+  * [Extended syntax\: GENSYMS](/README.md#TITLE:CLITH-DOCS:TAG13)
+* [Documentation](/README.md#TITLE:CLITH-DOCS:TAG14)
+* [Declarations](/README.md#TITLE:CLITH-DOCS:TAG15)
 
-* [Installation](/README.md#TITLE:CLITH-DOCS:TAG65)
-* [Reference](/README.md#TITLE:CLITH-DOCS:TAG66)
-* [Getting started](/README.md#TITLE:CLITH-DOCS:TAG67)
-* [Defining a WITH expansion](/README.md#TITLE:CLITH-DOCS:TAG68)
-* [Expansion\'s documentation](/README.md#TITLE:CLITH-DOCS:TAG69)
-* [Declarations](/README.md#TITLE:CLITH-DOCS:TAG70)
 
+<a id="TITLE:CLITH-DOCS:TAG6"></a>
+## Introduction
 
-<a id="TITLE:CLITH-DOCS:TAG65"></a>
+This library defines the macro [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH)\. This macro binds symbols to objects that can be finalized automatically in a personalized way\.
+
+`````common-lisp
+(with ((file (open "~/file.txt" :direction :output)))
+  (print "Hello Clith!" file))
+`````
+
+[clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) is powerful enough to support almost every regular ```WITH-``` macro\:
+
+`````common-lisp
+(defwith slots (vars (object) body)
+  `(with-slots ,vars ,object
+     ,@body))
+
+(defstruct 3d-vector x y z)
+
+(with ((p (make-3d-vector :x 1 :y 2 :z 3))
+       ((z (up y) x) (slots p)))
+  (+ x up z))
+`````
+`````common-lisp
+;; Returns
+6
+`````
+
+It supports declarations\:
+
+`````common-lisp
+(with (((x y z) (values 1 2 3))
+       ((a b c) (values 'a 'b 'c)))
+  (declare (ignore a y c))
+  (values x b z))
+`````
+`````common-lisp
+;; Returns
+1
+B
+3
+`````
+
+And it detects macros and symbol\-macros\:
+
+`````common-lisp
+(symbol-macrolet ((my-file (open "~/file.txt")))
+  (with ((f my-file))
+    (read f)))
+`````
+`````common-lisp
+;; Returns
+"Hello Clith!"
+`````
+
+<a id="TITLE:CLITH-DOCS:TAG7"></a>
 ## Installation
 
 * Manual\:
@@ -30,14 +87,30 @@ git clone https://github.com/Hectarea1996/clith.git
 (ql:quickload "clith")
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG66"></a>
+<a id="TITLE:CLITH-DOCS:TAG8"></a>
 ## Reference
 
 * [Reference](/docs/scribble/reference.md#TITLE:CLITH-DOCS:REFERENCE)
 
 
-<a id="TITLE:CLITH-DOCS:TAG67"></a>
+<a id="TITLE:CLITH-DOCS:TAG9"></a>
 ## Getting started
+
+[clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) can be used as [let](http://www.lispworks.com/reference/HyperSpec/Body/s_let_l.htm) or [multiple\-value\-bind](http://www.lispworks.com/reference/HyperSpec/Body/m_multip.htm)\:
+
+`````common-lisp
+(with (x
+       (y 3)
+       ((q r) (floor 4 5)))
+  (values x y q r))
+`````
+`````common-lisp
+;; Returns
+NIL
+3
+0
+4
+`````
 
 The macro [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) uses ```WITH expansions``` in a similar way to ```setf```\. These expansions control how the macro  [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) is expanded\.
 
@@ -60,7 +133,7 @@ Stream opened after? NIL
 NIL
 `````
 
-Every Common Lisp function that creates an object that should be closed\/destroyed at the end has a ```WITH expansion``` defined by ```CLITH```\. For example\, functions like [open](http://www.lispworks.com/reference/HyperSpec/Body/f_open.htm) or [make\-two\-way\-stream](http://www.lispworks.com/reference/HyperSpec/Body/f_mk_two.htm) have a ```WITH expansion```\. See all the functions in the [reference](/docs/scribble/reference.md#TITLE:CLITH-DOCS:CL-SYMBOLS)\.
+Every Common Lisp function that creates an object that should be closed\/destroyed has a ```WITH expansion``` defined by ```CLITH```\. For example\, functions like [open](http://www.lispworks.com/reference/HyperSpec/Body/f_open.htm) or [make\-two\-way\-stream](http://www.lispworks.com/reference/HyperSpec/Body/f_mk_two.htm) have a ```WITH expansion```\. See all the functions in the [reference](/docs/scribble/reference.md#TITLE:CLITH-DOCS:CL-SYMBOLS)\.
 
 Also\, we can check if a symbol denotes a ```WITH expansion``` using [clith\:withp](/docs/scribble/reference.md#FUNCTION:CLITH:WITHP)\:
 
@@ -72,8 +145,11 @@ Also\, we can check if a symbol denotes a ```WITH expansion``` using [clith\:wit
 T
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG68"></a>
+<a id="TITLE:CLITH-DOCS:TAG10"></a>
 ## Defining a WITH expansion
+
+<a id="TITLE:CLITH-DOCS:TAG11"></a>
+### Simple example\: MAKE\-WINDOW
 
 In order to extend the macro [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) we need to define a ```WITH expansion```\. To do so\, we use [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH:DEFWITH)\.
 
@@ -84,17 +160,17 @@ Suppose we have ```(MAKE-WINDOW TITLE)``` and ```(DESTROY-WINDOW WINDOW)```\. We
   "Makes a window that will be destroyed after the end of WITH."
   (let ((window-var (gensym)))
     `(let ((,window-var (make-window ,title)))
-       (let ((,window ,window-var))
-         (unwind-protect
-             (progn ,@body)
-           (destroy-window ,window-var))))))
+       (unwind-protect
+           (let ((,window ,window-var))
+             ,@body)
+         (destroy-window ,window-var)))))
 `````
 `````common-lisp
 ;; Returns
 MAKE-WINDOW
 `````
 
-This is a common implementation of a \'with\-\' macro\. Note that we specified ```(window)``` to specify that only one variable is wanted\.
+This is a common implementation of a ```WITH-``` macro\. Note that we specified ```(window)``` to specify that only one variable is wanted\.
 
 Now we can use our expansion\:
 
@@ -106,10 +182,78 @@ Now we can use our expansion\:
 
 After the evaluation of the body\, ```my-window``` will be destroyed by ```destroy-window```\.
 
-<a id="TITLE:CLITH-DOCS:TAG69"></a>
-## Expansion\'s documentation
+<a id="TITLE:CLITH-DOCS:TAG12"></a>
+### No need to return a value\: INIT\-SUBSYSTEM
 
-The macro [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH:DEFWITH) accepts a docstring that can be retrieved with the function ```documentation```\. Check out again the definition of the expansion of ```make-window``` above\. Note that we wrote a docstring\.
+There are ```WITH-``` macros that doesn\'t return anything\. They just initialize something that should be finalized at the end\. Imagine that we have the functions ```INIT-SUBSYSTEM``` and ```FINALIZE-SUBSYSTEM```\. Let\'s define a ```WITH expansion``` that calls to ```FINALIZE-SUBSYSTEM```\:
+
+`````common-lisp
+(defwith init-subsystem (() () body) ; <- No variables to bind and no arguments.
+  "Initialize the subsystem and finalize it at the end of WITH."
+  `(progn
+     (init-subsystem)
+     (unwind-protect
+         (progn ,@body)
+       (finalize-subsystem))))
+`````
+
+Now we don\'t need to worry about finalizing the subsystem\:
+
+`````common-lisp
+(with (((init-subsystem)))
+  ...)
+`````
+
+<a id="TITLE:CLITH-DOCS:TAG13"></a>
+### Extended syntax\: GENSYMS
+
+Some ```WITH-``` macros like [with\-slots](http://www.lispworks.com/reference/HyperSpec/Body/m_w_slts.htm) allow to specify some options to variables\. Let\'s try to make a ```WITH``` expansion that works like ```alexandria:with-gensyms```\. Each variable should optionally accept the prefix for the fresh generated symbol\.
+
+We want to achieve something like this\:
+
+`````common-lisp
+(with ((sym1 (gensyms))                  ; <- Regular syntax
+       ((sym2 (sym3 "FOO")) (gensyms)))  ; <- Extended syntax for SYM3
+  ...)
+`````
+
+In order to do this\, we are using [gensym](http://www.lispworks.com/reference/HyperSpec/Body/f_gensym.htm)\:
+
+`````common-lisp
+(defwith gensyms (vars () body)
+  (let* ((list-vars (mapcar #'alexandria:ensure-list vars))
+         (sym-vars (mapcar #'car list-vars))
+         (prefixes (mapcar #'cdr list-vars))
+         (let-bindings (mapcar (lambda (sym-var prefix)
+                                 `(,sym-var (gensym ,(if prefix (car prefix) (symbol-name sym-var)))))
+                               sym-vars prefixes)))
+    `(let ,let-bindings
+       ,@body)))
+`````
+`````common-lisp
+;; Returns
+GENSYMS
+`````
+
+Each element in ```VARS``` can be a symbol or a list\. That\'s the reason we are using ```alexandria:ensure-list```\. ```LIST-VARS``` will contain lists where the first element is the symbol to bound and can have a second element\, the prefix\. We store then the symbols in ```SYM-VARS``` and the prefixes in ```PREFIXES```\. Note that if a prefix is not specified\, then the corresponding element in ```PREFIXES``` will be ```NIL```\. If some ```PREFIX``` is ```NIL```\, we use the name of the respective ```SYM-VAR```\. Finally\, we create the ```LET-BINDING``` and use it in the final form\.
+
+Let\'s try it out\:
+
+`````common-lisp
+(with ((x (gensyms))
+       ((y z) (gensyms))
+       (((a "CUSTOM-A") (b "CUSTOM-B") c) (gensyms)))
+  (values (list x y z a b c)))
+`````
+`````common-lisp
+;; Returns
+(#:X329 #:Y330 #:Z331 #:CUSTOM-A332 #:CUSTOM-B333 #:C334)
+`````
+
+<a id="TITLE:CLITH-DOCS:TAG14"></a>
+## Documentation
+
+The macro [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH:DEFWITH) accepts a docstring that can be retrieved with the function [documentation](http://www.lispworks.com/reference/HyperSpec/Body/f_docume.htm)\. Check out again the definition of the expansion of ```make-window``` above\. Note that we wrote a docstring\.
 
 `````common-lisp
 (documentation 'make-window 'with)
@@ -131,17 +275,16 @@ We can also ```setf``` the docstring\:
 `````
 
 
-<a id="TITLE:CLITH-DOCS:TAG70"></a>
+<a id="TITLE:CLITH-DOCS:TAG15"></a>
 ## Declarations
 
-The macro [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) accepts declarations\. These declarations are moved to the correct place at expansion time\. For example\, imagine we want to open two windows\, but only one variable will be used\. The other one must be ignored\:
+The macro [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH:WITH) accepts declarations\. These declarations are moved to the correct place at expansion time\. For example\, imagine we want to open two windows\, but the variables can be ignored\:
 
 `````common-lisp
 (with ((w1 (make-window "Window 1"))
        (w2 (make-window "Window 2")))
-  (declare (ignore w1))
-  (print "Hello world!")
-)
+  (declare (ignorable w1 w2))
+  (print "Hello world!"))
 `````
 
 Let\'s see the expanded code\:
@@ -149,22 +292,23 @@ Let\'s see the expanded code\:
 `````common-lisp
 (macroexpand-1 '(with ((w1 (make-window "Window 1"))
                        (w2 (make-window "Window 2")))
-                  (declare (ignore w1))
+                  (declare (ignorable w1 w2))
                   (print "Hello world!")))
 `````
 `````common-lisp
 ;; Returns
-(LET ((#:G382 (MAKE-WINDOW "Window 1")))
-  (LET ((W1 #:G382))
-    (UNWIND-PROTECT
-        (PROGN
-         (DECLARE (IGNORE W1))
-         (LET ((#:G380 (MAKE-WINDOW "Window 2")))
-           (LET ((W2 #:G380))
-             (UNWIND-PROTECT (PROGN (PRINT "Hello world!"))
-               (DESTROY-WINDOW #:G380)))))
-      (DESTROY-WINDOW #:G382))))
+(LET ((#:G346 (MAKE-WINDOW "Window 1")))
+  (UNWIND-PROTECT
+      (LET ((W1 #:G346))
+        (DECLARE (IGNORABLE W1))
+        (LET ((#:G343 (MAKE-WINDOW "Window 2")))
+          (UNWIND-PROTECT
+              (LET ((W2 #:G343))
+                (DECLARE (IGNORABLE W2))
+                (PRINT "Hello world!"))
+            (DESTROY-WINDOW #:G343))))
+    (DESTROY-WINDOW #:G346)))
 T
 `````
 
-Observe that the declaration is in the right place\. Every symbol that can be bound is a candidate for a declaration\. If more that one candidate is found \(same symbol appearing more than once\) the last one is selected\.
+Observe that the declarations are in the right place\. Every symbol that can be bound is a candidate for a declaration\. If more that one candidate is found \(same symbol appearing more than once\) the last one is selected\.
