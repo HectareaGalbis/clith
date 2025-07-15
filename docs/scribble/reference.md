@@ -9,13 +9,14 @@
 <a id="TITLE:CLITH-DOCS:TAG1"></a>
 ## API reference
 
-* [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG3)
-* [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG2)
-* [clith\:withp](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG4)
+* [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG4)
+* [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG3)
+* [clith\:with\*](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG5)
+* [clith\:withp](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG2)
 
 
 <a id="FUNCTION:CLITH:DEFWITH"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG3"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG4"></a>
 #### Macro: clith\:defwith \(name \(vars args with\-body\) \&body body\)
 
 `````text
@@ -61,8 +62,16 @@ Finally, note that we put a docstring when we defined MY-FILE. We can retrieve i
 `````
 
 <a id="FUNCTION:CLITH:WITH"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG2"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG3"></a>
 #### Macro: clith\:with \(bindings \&body body\)
+
+`````text
+Same as WITH*, but only WITH expansions are allowed.
+`````
+
+<a id="FUNCTION:CLITH:WITH*"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG5"></a>
+#### Macro: clith\:with\* \(bindings \&body body\)
 
 `````text
 This macro has the following systax:
@@ -82,7 +91,7 @@ this, the behaeviour of WITH is slightly different:
     (with (x)  ; X is bound to NIL
       ...)
 
-  - A list with one element. That element can be a WITH expansion or not:
+  - A list with one element. That element must be a WITH expansion or not:
 
     * A WITH expansion: The form is expanded according to DEFWITH. In this case,
       the WITH expansion will receive NIL as the list of variables to be bound.
@@ -128,7 +137,7 @@ will be expanded with MACROEXPAND-1 and its result is the form, or WITH expansio
 `````
 
 <a id="FUNCTION:CLITH:WITHP"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG4"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG2"></a>
 #### Function: clith\:withp \(sym\)
 
 `````text

@@ -210,23 +210,27 @@ The latter are the rest of declarations.
       (error (c)
         (error "Error expanding the WITH expansion ~a:~%~a" macro-name c))))
 
-  (defun make-with-macro-form (binding body declaration env)
+  (defun make-with-macro-form (binding body declaration strictp env)
     "Expands a WITH expansion given its BINDING, its BODY and its DECLARATION."
     (let ((actual-body (if declaration
                            (cons `(declare ,@declaration) body)
                            body)))
       (let ((vars (car binding)))
-        (if (with-macro-binding-p binding env)
+        (cond
+          ((with-macro-binding-p binding env)
             (let ((macro-name (caadr binding))
                   (args (cdadr binding)))
-              (list (expand-with-expansion macro-name vars args actual-body)))
-            (let ((expression (cadr binding)))
-              (if vars
-                  (list `(multiple-value-bind ,vars ,expression
-                           ,@actual-body))
-                  (cons expression actual-body)))))))
+              (list (expand-with-expansion macro-name vars args actual-body))))
+          ((not strictp)
+           (let ((expression (cadr binding)))
+             (if vars
+                 (list `(multiple-value-bind ,vars ,expression
+                          ,@actual-body))
+                 (cons expression actual-body))))
+          (t
+           (error "This expression is not a WITH expansion: ~s" (cadr binding)))))))
 
-  (defun make-with-form (bindings body binding-declarations body-declarations env)
+  (defun make-with-form (bindings body binding-declarations body-declarations strictp env)
     "Returns the WITH macro expansion."
     (if (null bindings)
 
@@ -241,14 +245,27 @@ The latter are the rest of declarations.
         (let ((binding (car bindings))
               (rest-bindings (cdr bindings)))
           (multiple-value-bind (inner-form rest-declarations)
-              (make-with-form rest-bindings body binding-declarations body-declarations env)
+              (make-with-form rest-bindings body binding-declarations body-declarations strictp env)
             (multiple-value-bind (binding-declaration new-rest-declarations)
                 (split-declarations (list binding) rest-declarations)
-              (values (make-with-macro-form binding inner-form binding-declaration env)
-                      new-rest-declarations)))))))
+              (values (make-with-macro-form binding inner-form binding-declaration strictp env)
+                      new-rest-declarations))))))
+
+  (defun expand-with (bindings body strictp env)
+    (check-bindings bindings env)
+    (let ((canonized-bindings (mapcar (lambda (binding) (canonize-binding binding env)) bindings)))
+      (multiple-value-bind (declarations actual-body) (extract-declarations body)
+        (multiple-value-bind (binding-declarations body-declarations)
+            (split-declarations canonized-bindings declarations)
+          (let ((with-form (make-with-form canonized-bindings actual-body binding-declarations body-declarations strictp env)))
+            (case (length with-form)
+              (0 nil)
+              (1 (car with-form))
+              (t (cons 'progn with-form)))))))))
 
 
-(defmacro with (bindings &body body &environment env)
+
+(defmacro with* (bindings &body body &environment env)
   "This macro has the following systax:
 
   (WITH (binding*) declaration* form*)
@@ -266,7 +283,7 @@ this, the behaeviour of WITH is slightly different:
     (with (x)  ; X is bound to NIL
       ...)
 
-  - A list with one element. That element can be a WITH expansion or not:
+  - A list with one element. That element must be a WITH expansion or not:
 
     * A WITH expansion: The form is expanded according to DEFWITH. In this case,
       the WITH expansion will receive NIL as the list of variables to be bound.
@@ -309,13 +326,8 @@ These options should be used inside DEFWITH to control the expansion with better
 
 Macros and symbol-macros are treated specially. If a macro or symbol-macro is used, they
 will be expanded with MACROEXPAND-1 and its result is the form, or WITH expansion, this macro uses."
-  (check-bindings bindings env)
-  (let ((canonized-bindings (mapcar (lambda (binding) (canonize-binding binding env)) bindings)))
-    (multiple-value-bind (declarations actual-body) (extract-declarations body)
-      (multiple-value-bind (binding-declarations body-declarations)
-          (split-declarations canonized-bindings declarations)
-        (let ((with-form (make-with-form canonized-bindings actual-body binding-declarations body-declarations env)))
-          (case (length with-form)
-            (0 nil)
-            (1 (car with-form))
-            (t (cons 'progn with-form))))))))
+  (expand-with bindings body nil env))
+
+(defmacro with (bindings &body body &environment env)
+  "Same as WITH*, but only WITH expansions are allowed."
+  (expand-with bindings body t env))

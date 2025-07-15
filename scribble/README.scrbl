@@ -11,14 +11,16 @@ Welcome to Clith!
 
 @subtitle{Introduction}
 
-This library defines the macro @fref[with]. This macro binds symbols to objects that can be finalized automatically in a personalized way.
+This library defines the macro @fref[with] and a more relaxed version @fref[with*].
+
+These macros aim to encapsulate every kind of @code{WITH-} macro into one. 
 
 @code-block[:lang "common-lisp"]{
   (with ((file (open "~/file.txt" :direction :output)))
     (print "Hello Clith!" file))
 }
 
-@fref[with] is powerful enough to support almost every regular @code{WITH-} macro:
+@fref[with] is powerful enough to support almost every @code{WITH-} macro:
 
 @example|{
 (defwith slots (vars (object) body)
@@ -27,16 +29,17 @@ This library defines the macro @fref[with]. This macro binds symbols to objects 
 
 (defstruct 3d-vector x y z)
 
-(with ((p (make-3d-vector :x 1 :y 2 :z 3))
-       ((z (up y) x) (slots p)))
+;; WITH* accepts regular bindings
+(with* ((p (make-3d-vector :x 1 :y 2 :z 3))
+        ((z (up y) x) (slots p)))
   (+ x up z))
 }|
 
 It supports declarations:
 
 @example{
-(with (((x y z) (values 1 2 3))
-       ((a b c) (values 'a 'b 'c)))
+(with* (((x y z) (values 1 2 3))
+        ((a b c) (values 'a 'b 'c)))
   (declare (ignore a y c))
   (values x b z))
 }
@@ -73,16 +76,7 @@ git clone https://github.com/Hectarea1996/clith.git
 
 @subtitle{Getting started}
 
-@fref[with] can be used as @clref[let] or @clref[multiple-value-bind]:
-
-@example{
-(with (x
-       (y 3)
-       ((q r) (floor 4 5)))
-  (values x y q r))
-}
-
-The macro @fref[with] uses @code{WITH expansions} in a similar way to @code{setf}. These expansions control how the macro  @fref[with] is expanded.
+The macros @fref[with] and @fref[with*] uses @code{WITH expansions} in a similar way to @code{setf}. These expansions control how these macros are expanded. 
 
 @example{
 (let (some-stream)
@@ -92,6 +86,15 @@ The macro @fref[with] uses @code{WITH expansions} in a similar way to @code{setf
     (format t "Stream opened? ~s~%" (open-stream-p some-stream)))
 
   (format t "Stream opened after? ~s" (open-stream-p some-stream)))
+}
+
+@fref[with*] can be used as @clref[let] or @clref[multiple-value-bind] as well:
+
+@example{
+(with* (x
+        (y 3)
+        ((q r) (floor 4 5)))
+  (values x y q r))
 }
 
 Every Common Lisp function that creates an object that should be closed/destroyed has a @code{WITH expansion} defined by @code{CLITH}. For example, functions like @clref[open] or @clref[make-two-way-stream] have a @code{WITH expansion}. See all the functions in the @tref[cl-symbols]{reference}.
@@ -108,7 +111,7 @@ Also, we can check if a symbol denotes a @code{WITH expansion} using @fref[withp
 
 In order to extend the macro @fref[with] we need to define a @code{WITH expansion}. To do so, we use @fref[defwith].
 
-Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. We want to control the expansion of WITH in order to use both functions. Let's define the WITH expansion:
+Suppose we have @code{(MAKE-WINDOW TITLE)} and @code{(DESTROY-WINDOW WINDOW)}. We want to control the expansion of @fref[with] and/or @fref[with*] in order to use both functions. Let's define the WITH expansion:
 
 @example|{
 (defwith make-window ((window) (title) body)

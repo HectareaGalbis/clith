@@ -3,4 +3,5 @@
   (:use #:cl #:alexandria)
   (:export #:defwith
            #:withp
-           #:with))
+           #:with
+           #:with*))
