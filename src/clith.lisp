@@ -22,31 +22,35 @@ I.e. if extendedp, a variable can be a list with a symbol followed by other form
                  (when (listp var)
                    (check-type (car var) symbol)))))
   
-  (defun check-defwith (name vars with-body)
+  (defun check-defwith (name vars with-body with-declarations with-declarations-p)
     (check-type name symbol)
     (check-vars vars t)
-    (check-type with-body symbol)))
+    (check-type with-body symbol)
+    (when with-declarations-p
+      (check-type with-declarations symbol))))
 
 
-(defmacro defwith (name (vars args with-body) &body body)
+(defmacro defwith (name (vars args with-body &optional (with-declarations nil with-declarations-p)) &body body)
   "Define a WITH expansion. A WITH expansion controls how the macro WITH is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body) declaration* body*)
+  (DEFWITH name (vars args with-body [with-declaration]) declaration* body*)
 
-  name             ::= symbol
-  vars             ::= symbol | (var-with-options*)
-  var-with-options ::= symbol | (symbol option*)
-  option           ::= destructuring-lambda-argument
-  args             ::= destructuring-lambda-list
-  with-body        ::= symbol
-  declaration      ::= declaration-form | docstring
-  body             ::= form
+  name              ::= symbol
+  vars              ::= symbol | (var-with-options*)
+  var-with-options  ::= symbol | (symbol option*)
+  option            ::= destructuring-lambda-argument
+  args              ::= destructuring-lambda-list
+  with-body         ::= symbol
+  with-declarations ::= symbol
+  declaration       ::= declaration-form | docstring
+  body              ::= form
 
 When using (NAME ARGS*) inside the macro WITH, it will expand to the value returned by DEFWITH.
 The variables to be bound are passed through VARS (VARS will always be a list) and the arguments passed
 to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Keep in mind that
-WITH-BODY can contain declarations.
+WITH-BODY can contain declarations. However, if WITH-DECLARATIONS is used, a list of DECLARE forms will
+be received separated from WITH-BODY.
 
 As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
@@ -68,9 +72,18 @@ Now, using WITH:
 Finally, note that we put a docstring when we defined MY-FILE. We can retrieve it with DOCUMENTATION:
 
   (documentation 'my-file 'with)  ;; --> \"Open a file.\""
-  (check-defwith name vars with-body)
-  `(exp:defexpansion with ,name (,vars ,args ,with-body)
-     ,@body))
+  (check-defwith name vars with-body with-declarations with-declarations-p)
+  (if with-declarations-p
+      `(exp:defexpansion with ,name (,vars ,args ,with-body ,with-declarations)
+         ,@body)
+      (multiple-value-bind (actual-body declarations docstring) (parse-body body :documentation t)
+        (with-gensyms (vars-sym args-sym with-body-sym with-declarations-sym)
+          `(exp:defexpansion with ,name (,vars-sym ,args-sym ,with-body-sym ,with-declarations-sym)
+             ,@(when docstring (list docstring))
+             (destructuring-bind (,vars ,args ,with-body)
+                 (list ,vars-sym ,args-sym (append ,with-declarations-sym ,with-body-sym))
+               ,@declarations
+               ,@actual-body))))))
 
 (defun withp (sym)
   "Checks wether a symbol denotes a WITH expansion."
@@ -204,31 +217,30 @@ The latter are the rest of declarations.
     "Checks if a binding has a custom expansion."
     (with-expansion-p (cadr canonized-binding) env))
   
-  (defun expand-with-expansion (macro-name vars args body)
+  (defun expand-with-expansion (macro-name vars args body declarations)
     "Expands a WITH expansion."
-    (handler-case (exp:expand 'with `(,macro-name ,vars ,args ,body))
+    (handler-case (exp:expand 'with `(,macro-name ,vars ,args ,body ,declarations))
       (error (c)
         (error "Error expanding the WITH expansion ~a:~%~a" macro-name c))))
 
   (defun make-with-macro-form (binding body declaration strictp env)
     "Expands a WITH expansion given its BINDING, its BODY and its DECLARATION."
-    (let ((actual-body (if declaration
-                           (cons `(declare ,@declaration) body)
-                           body)))
-      (let ((vars (car binding)))
-        (cond
-          ((with-macro-binding-p binding env)
-            (let ((macro-name (caadr binding))
-                  (args (cdadr binding)))
-              (list (expand-with-expansion macro-name vars args actual-body))))
-          ((not strictp)
-           (let ((expression (cadr binding)))
-             (if vars
-                 (list `(multiple-value-bind ,vars ,expression
-                          ,@actual-body))
-                 (cons expression actual-body))))
-          (t
-           (error "This expression is not a WITH expansion: ~s" (cadr binding)))))))
+    (let ((vars (car binding))
+          (declarations (and declaration `((declare ,@declaration)))))
+      (cond
+        ((with-macro-binding-p binding env)
+         (let ((macro-name (caadr binding))
+               (args (cdadr binding)))
+           (list (expand-with-expansion macro-name vars args body declarations))))
+        ((not strictp)
+         (let ((expression (cadr binding)))
+           (if vars
+               (list `(multiple-value-bind ,vars ,expression
+                        ,@declarations
+                        ,@body))
+               (cons expression body))))
+        (t
+         (error "This expression is not a WITH expansion: ~s" (cadr binding))))))
 
   (defun make-with-form (bindings body binding-declarations body-declarations strictp env)
     "Returns the WITH macro expansion."

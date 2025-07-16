@@ -250,7 +250,7 @@ Let\'s try it out\:
 `````
 `````common-lisp
 ;; Returns
-(#:X457 #:Y458 #:Z459 #:CUSTOM-A460 #:CUSTOM-B461 #:C462)
+(#:X341 #:Y342 #:Z343 #:CUSTOM-A344 #:CUSTOM-B345 #:C346)
 `````
 
 <a id="TITLE:CLITH-DOCS:TAG15"></a>
@@ -300,18 +300,43 @@ Let\'s see the expanded code\:
 `````
 `````common-lisp
 ;; Returns
-(LET ((#:G474 (MAKE-WINDOW "Window 1")))
+(LET ((#:G358 (MAKE-WINDOW "Window 1")))
   (UNWIND-PROTECT
-      (LET ((W1 #:G474))
+      (LET ((W1 #:G358))
         (DECLARE (IGNORABLE W1))
-        (LET ((#:G471 (MAKE-WINDOW "Window 2")))
+        (LET ((#:G355 (MAKE-WINDOW "Window 2")))
           (UNWIND-PROTECT
-              (LET ((W2 #:G471))
+              (LET ((W2 #:G355))
                 (DECLARE (IGNORABLE W2))
                 (PRINT "Hello world!"))
-            (DESTROY-WINDOW #:G471))))
-    (DESTROY-WINDOW #:G474)))
+            (DESTROY-WINDOW #:G355))))
+    (DESTROY-WINDOW #:G358)))
 T
 `````
 
 Observe that the declarations are in the right place\. Every symbol that can be bound is a candidate for a declaration\. If more that one candidate is found \(same symbol appearing more than once\) the last one is selected\.
+
+On the other side\, while defining a new ```WITH``` expansion\, declarations are included in the ```body``` argument\. All the examples above consider that ```body``` can contain declarations\. However\, an extra optional argument can be specified on [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH:DEFWITH) to receive declarations separately\.
+
+Taking back the ```MAKE-WINDOW``` example\, the following two definitions are equivalent\:
+
+`````
+(defwith make-window ((window) (title) body)
+  "Makes a window that will be destroyed after the end of WITH."
+  (let ((window-var (gensym)))
+    `(let ((,window-var (make-window ,title)))
+       (unwind-protect
+           (let ((,window ,window-var))
+             ,@body)                     ; <-- Body containing declarations
+         (destroy-window ,window-var)))))
+
+(defwith make-window ((window) (title) body declarations) ; <-- Receiving declarations separately
+  "Makes a window that will be destroyed after the end of WITH."
+  (let ((window-var (gensym)))
+    `(let ((,window-var (make-window ,title)))
+       (unwind-protect
+           (let ((,window ,window-var))
+             ,@declarations             ; <-- Expanding declarations here
+             ,@body)
+         (destroy-window ,window-var)))))
+`````

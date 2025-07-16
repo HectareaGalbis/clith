@@ -9,35 +9,37 @@
 <a id="TITLE:CLITH-DOCS:TAG1"></a>
 ## API reference
 
-* [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG4)
-* [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG3)
-* [clith\:with\*](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG5)
-* [clith\:withp](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG2)
+* [clith\:defwith](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG3)
+* [clith\:with](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG2)
+* [clith\:with\*](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG4)
+* [clith\:withp](/docs/scribble/reference.md#FUNCTION:CLITH-DOCS:TAG5)
 
 
 <a id="FUNCTION:CLITH:DEFWITH"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG4"></a>
-#### Macro: clith\:defwith \(name \(vars args with\-body\) \&body body\)
+<a id="FUNCTION:CLITH-DOCS:TAG3"></a>
+#### Macro: clith\:defwith \(name \(vars args with\-body \&optional \(with\-declarations nil\)\) \&body body\)
 
 `````text
 Define a WITH expansion. A WITH expansion controls how the macro WITH is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body) declaration* body*)
+  (DEFWITH name (vars args with-body [with-declaration]) declaration* body*)
 
-  name             ::= symbol
-  vars             ::= symbol | (var-with-options*)
-  var-with-options ::= symbol | (symbol option*)
-  option           ::= destructuring-lambda-argument
-  args             ::= destructuring-lambda-list
-  with-body        ::= symbol
-  declaration      ::= declaration-form | docstring
-  body             ::= form
+  name              ::= symbol
+  vars              ::= symbol | (var-with-options*)
+  var-with-options  ::= symbol | (symbol option*)
+  option            ::= destructuring-lambda-argument
+  args              ::= destructuring-lambda-list
+  with-body         ::= symbol
+  with-declarations ::= symbol
+  declaration       ::= declaration-form | docstring
+  body              ::= form
 
 When using (NAME ARGS*) inside the macro WITH, it will expand to the value returned by DEFWITH.
 The variables to be bound are passed through VARS (VARS will always be a list) and the arguments passed
 to NAME are bound to ARGS. Finally, WITH-BODY is bound to the body of the WITH macro. Keep in mind that
-WITH-BODY can contain declarations.
+WITH-BODY can contain declarations. However, if WITH-DECLARATIONS is used, a list of DECLARE forms will
+be received separated from WITH-BODY.
 
 As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
@@ -62,7 +64,7 @@ Finally, note that we put a docstring when we defined MY-FILE. We can retrieve i
 `````
 
 <a id="FUNCTION:CLITH:WITH"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG3"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG2"></a>
 #### Macro: clith\:with \(bindings \&body body\)
 
 `````text
@@ -70,7 +72,7 @@ Same as WITH*, but only WITH expansions are allowed.
 `````
 
 <a id="FUNCTION:CLITH:WITH*"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG5"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG4"></a>
 #### Macro: clith\:with\* \(bindings \&body body\)
 
 `````text
@@ -137,7 +139,7 @@ will be expanded with MACROEXPAND-1 and its result is the form, or WITH expansio
 `````
 
 <a id="FUNCTION:CLITH:WITHP"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG2"></a>
+<a id="FUNCTION:CLITH-DOCS:TAG5"></a>
 #### Function: clith\:withp \(sym\)
 
 `````text

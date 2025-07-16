@@ -231,3 +231,28 @@ Let's see the expanded code:
 }
 
 Observe that the declarations are in the right place. Every symbol that can be bound is a candidate for a declaration. If more that one candidate is found (same symbol appearing more than once) the last one is selected.
+
+On the other side, while defining a new @code{WITH} expansion, declarations are included in the @code{body} argument. All the examples above consider that @code{body} can contain declarations. However, an extra optional argument can be specified on @fref[defwith] to receive declarations separately.
+
+Taking back the @code{MAKE-WINDOW} example, the following two definitions are equivalent:
+
+@code-block|{
+(defwith make-window ((window) (title) body)
+  "Makes a window that will be destroyed after the end of WITH."
+  (let ((window-var (gensym)))
+    `(let ((,window-var (make-window ,title)))
+       (unwind-protect
+           (let ((,window ,window-var))
+             ,@body)                     ; <-- Body containing declarations
+         (destroy-window ,window-var)))))
+
+(defwith make-window ((window) (title) body declarations) ; <-- Receiving declarations separately
+  "Makes a window that will be destroyed after the end of WITH."
+  (let ((window-var (gensym)))
+    `(let ((,window-var (make-window ,title)))
+       (unwind-protect
+           (let ((,window ,window-var))
+             ,@declarations             ; <-- Expanding declarations here
+             ,@body)
+         (destroy-window ,window-var)))))
+}|
