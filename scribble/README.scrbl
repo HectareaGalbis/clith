@@ -236,7 +236,7 @@ On the other side, while defining a new @code{WITH} expansion, declarations are 
 
 Taking back the @code{MAKE-WINDOW} example, the following two definitions are equivalent:
 
-@code-block|{
+@code-block[:lang "common-lisp"]|{
 (defwith make-window ((window) (title) body)
   "Makes a window that will be destroyed after the end of WITH."
   (let ((window-var (gensym)))
