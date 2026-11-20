@@ -8,7 +8,19 @@
                 :serial t
                 :components ((:file "package")
 	                     (:file "clith")
-                             (:file "definitions")))))
+                             (:file "definitions"))))
+  :in-order-to ((test-op (test-op "clith/test"))))
+
+(defsystem "clith/test"
+  :depends-on ("clith")
+  :components ((:module "test"
+                :serial t
+                :components ((:file "package")
+                             (:file "harness")
+                             (:file "tests"))))
+  :perform (test-op (op c)
+             (unless (uiop:symbol-call '#:clith/test '#:run-tests)
+               (error "clith tests failed"))))
 
 
 ;; (defsystem "clith/docs"

@@ -7,18 +7,24 @@
   "Define a WITH expansion. A WITH expansion controls how the macro WITH is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body [with-declaration]) declaration* body*)
+  (DEFWITH name ([&whole whole-var] [&environment env-var] vars with-body . args)
+    [docstring] declaration* body*)
 
   name              ::= symbol
-  args              ::= macro-lambda-list
+  args              ::= rest of a macro-lambda-list
   body              ::= form
 
 When using (NAME ARGS*) inside the macro WITH, it will expand to the value returned by DEFWITH.
-ARGS must indicate at least 2 required arguments being:
+The lambda list must indicate at least 2 required arguments, followed by the arguments ARGS:
   1. The list of variables to bound. Each element of the list can have the form {var | (var var-option*)} where
      var is a symbol and var-option can be any form.
   2. The body of the WITH macro.
-Keep in mind that the second argument can contain declarations.
+Keep in mind that the body can start with declarations. These are the declarations written in WITH that
+apply to the variables to bound, so the expansion should place the body where declarations are allowed.
+
+If &whole is used, WHOLE-VAR is bound to the form written by the user, i.e. (NAME ARGS*), without the
+variables and the body. If that form was obtained by expanding a macro or symbol-macro, WHOLE-VAR
+is bound to the expanded form. If &environment is used, ENV-VAR is bound to the environment of WITH.
 
 As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
@@ -38,8 +44,26 @@ Now, using WITH:
 Finally, note that we put a docstring when we defined MY-FILE. We can retrieve it with DOCUMENTATION:
 
   (documentation 'my-file 'with)  ;; --> \"Open a file.\""
-  `(defexpansion with ,name ,args
-     ,@body))
+  (if (and (consp args) (eq (car args) '&whole))
+      (let* ((whole-var (cadr args))
+             (whole-sym (gensym "WHOLE"))
+             (rest-args (do ((tail (cddr args) (cdr tail))
+                             (items nil (cons (car tail) items)))
+                            ((atom tail)
+                             (if tail
+                                 (append (nreverse items) (list '&rest tail))
+                                 (nreverse items)))))
+             (whole-binding `(,whole-var (cons (car ,whole-sym) (cdddr ,whole-sym))))
+             (aux-pos (position '&aux rest-args))
+             (new-args (if aux-pos
+                           (append (subseq rest-args 0 (1+ aux-pos))
+                                   (list whole-binding)
+                                   (subseq rest-args (1+ aux-pos)))
+                           (append rest-args (list '&aux whole-binding)))))
+        `(defexpansion with ,name (&whole ,whole-sym ,@new-args)
+           ,@body))
+      `(defexpansion with ,name ,args
+         ,@body)))
 
 (defun withp (sym)
   "Checks wether a symbol denotes a WITH expansion."

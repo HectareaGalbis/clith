@@ -1,24 +1,24 @@
 
 
-<a id="TITLE:CLITH-DOCS:TAG1"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG1"></a>
 # Common Lisp wITH
 
 Welcome to Clith\!
 
-* [Introduction](/README.md#TITLE:CLITH-DOCS:TAG2)
-* [Installation](/README.md#TITLE:CLITH-DOCS:TAG3)
-* [Getting started](/README.md#TITLE:CLITH-DOCS:TAG4)
-* [Defining a WITH expansion](/README.md#TITLE:CLITH-DOCS:TAG5)
-  * [Simple example\: MAKE\-WINDOW](/README.md#TITLE:CLITH-DOCS:TAG6)
-  * [No need to return a value\: INIT\-SUBSYSTEM](/README.md#TITLE:CLITH-DOCS:TAG7)
-  * [Extended syntax\: GENSYMS](/README.md#TITLE:CLITH-DOCS:TAG8)
-* [Documentation](/README.md#TITLE:CLITH-DOCS:TAG9)
-* [Declarations](/README.md#TITLE:CLITH-DOCS:TAG10)
+* [Introduction](/README.md#TITLE:ADP-GITHUB-WRITING:TAG2)
+* [Installation](/README.md#TITLE:ADP-GITHUB-WRITING:TAG3)
+* [Getting started](/README.md#TITLE:ADP-GITHUB-WRITING:TAG4)
+* [Defining a WITH expansion](/README.md#TITLE:ADP-GITHUB-WRITING:TAG5)
+  * [Simple example\: MAKE\-WINDOW](/README.md#TITLE:ADP-GITHUB-WRITING:TAG6)
+  * [No need to return a value\: INIT\-SUBSYSTEM](/README.md#TITLE:ADP-GITHUB-WRITING:TAG7)
+  * [Extended syntax\: GENSYMS](/README.md#TITLE:ADP-GITHUB-WRITING:TAG8)
+* [Documentation](/README.md#TITLE:ADP-GITHUB-WRITING:TAG9)
+* [Declarations](/README.md#TITLE:ADP-GITHUB-WRITING:TAG10)
 * [Built\-in WITH expansions](/README.md#TITLE:CLITH-DOCS:CL-SYMBOLS)
-* [Reference](/README.md#TITLE:CLITH-DOCS:TAG11)
+* [Reference](/README.md#TITLE:ADP-GITHUB-WRITING:TAG11)
 
 
-<a id="TITLE:CLITH-DOCS:TAG2"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG2"></a>
 ## Introduction
 
 This library defines the macro [clith\:with](/README.md#FUNCTION:CLITH:WITH)\.
@@ -73,7 +73,7 @@ And it detects macros and symbol\-macros\:
 "Hola mundo"
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG3"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG3"></a>
 ## Installation
 
 * Manual\:
@@ -88,7 +88,7 @@ git clone https://github.com/HectareaGalbis/clith.git
 (ql:quickload "clith")
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG4"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG4"></a>
 ## Getting started
 
 The macro [clith\:with](/README.md#FUNCTION:CLITH:WITH) uses ```WITH expansions``` in a similar way to ```setf```\. These expansions control how this macro is expanded\.
@@ -124,10 +124,10 @@ Also\, we can check if a symbol denotes a ```WITH expansion``` using [clith\:wit
 T
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG5"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG5"></a>
 ## Defining a WITH expansion
 
-<a id="TITLE:CLITH-DOCS:TAG6"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG6"></a>
 ### Simple example\: MAKE\-WINDOW
 
 In order to extend the macro [clith\:with](/README.md#FUNCTION:CLITH:WITH) we need to define a ```WITH expansion```\. To do so\, we use [clith\:defwith](/README.md#FUNCTION:CLITH:DEFWITH)\.
@@ -161,7 +161,7 @@ Now we can use our expansion\:
 
 After the evaluation of the body\, ```my-window``` will be destroyed by ```destroy-window```\.
 
-<a id="TITLE:CLITH-DOCS:TAG7"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG7"></a>
 ### No need to return a value\: INIT\-SUBSYSTEM
 
 There are ```WITH-``` macros that doesn\'t return anything\. They just initialize something that should be finalized at the end\. Imagine that we have the functions ```INIT-SUBSYSTEM``` and ```FINALIZE-SUBSYSTEM```\. Let\'s define a ```WITH expansion``` that calls to ```FINALIZE-SUBSYSTEM```\:
@@ -183,7 +183,7 @@ Now we don\'t need to worry about finalizing the subsystem\:
   ...)
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG8"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG8"></a>
 ### Extended syntax\: GENSYMS
 
 Some ```WITH-``` macros like [with\-slots](http://www.lispworks.com/reference/HyperSpec/Body/m_w_slts.htm) allow to specify some options to variables\. Let\'s try to make a ```WITH``` expansion that works like ```alexandria:with-gensyms```\. Each variable should optionally accept the prefix for the fresh generated symbol\.
@@ -226,10 +226,10 @@ Let\'s try it out\:
 `````
 `````common-lisp
 ;; Returns
-(#:X281 #:Y282 #:Z283 #:CUSTOM-A284 #:CUSTOM-B285 #:C286)
+(#:X339 #:Y340 #:Z341 #:CUSTOM-A342 #:CUSTOM-B343 #:C344)
 `````
 
-<a id="TITLE:CLITH-DOCS:TAG9"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG9"></a>
 ## Documentation
 
 The macro [clith\:defwith](/README.md#FUNCTION:CLITH:DEFWITH) accepts a docstring that can be retrieved with the function [documentation](http://www.lispworks.com/reference/HyperSpec/Body/f_docume.htm)\. Check out again the definition of the expansion of ```make-window``` above\. Note that we wrote a docstring\.
@@ -254,7 +254,7 @@ We can also ```setf``` the docstring\:
 `````
 
 
-<a id="TITLE:CLITH-DOCS:TAG10"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG10"></a>
 ## Declarations
 
 The macro [clith\:with](/README.md#FUNCTION:CLITH:WITH) accepts declarations\. These declarations are moved to the correct place at expansion time\. For example\, imagine we want to open two windows\, but the variables can be ignored\:
@@ -276,17 +276,17 @@ Let\'s see the expanded code\:
 `````
 `````common-lisp
 ;; Returns
-(LET ((#:G298 (MAKE-WINDOW "Window 1")))
+(LET ((#:G359 (MAKE-WINDOW "Window 1")))
   (UNWIND-PROTECT
-      (LET ((W1 #:G298))
+      (LET ((W1 #:G359))
         (DECLARE (IGNORABLE W1))
-        (LET ((#:G297 (MAKE-WINDOW "Window 2")))
+        (LET ((#:G358 (MAKE-WINDOW "Window 2")))
           (UNWIND-PROTECT
-              (LET ((W2 #:G297))
+              (LET ((W2 #:G358))
                 (DECLARE (IGNORABLE W2))
                 (PRINT "Hello world!"))
-            (DESTROY-WINDOW #:G297))))
-    (DESTROY-WINDOW #:G298)))
+            (DESTROY-WINDOW #:G358))))
+    (DESTROY-WINDOW #:G359)))
 T
 `````
 
@@ -308,29 +308,35 @@ The following Common Lisp functions have a ```WITH expansion```\:
 * ```open```
 
 
-<a id="TITLE:CLITH-DOCS:TAG11"></a>
+<a id="TITLE:ADP-GITHUB-WRITING:TAG11"></a>
 ## Reference
 
 <a id="FUNCTION:CLITH:DEFWITH"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG12"></a>
+<a id="FUNCTION:ADP-GITHUB-WRITING:TAG12"></a>
 #### Macro: clith\:defwith \(name args \&body body\)
 
 `````text
 Define a WITH expansion. A WITH expansion controls how the macro WITH is expanded. This macro has
 the following syntax:
 
-  (DEFWITH name (vars args with-body [with-declaration]) declaration* body*)
+  (DEFWITH name ([&whole whole-var] [&environment env-var] vars with-body . args)
+    [docstring] declaration* body*)
 
   name              ::= symbol
-  args              ::= macro-lambda-list
+  args              ::= rest of a macro-lambda-list
   body              ::= form
 
 When using (NAME ARGS*) inside the macro WITH, it will expand to the value returned by DEFWITH.
-ARGS must indicate at least 2 required arguments being:
+The lambda list must indicate at least 2 required arguments, followed by the arguments ARGS:
   1. The list of variables to bound. Each element of the list can have the form {var | (var var-option*)} where
      var is a symbol and var-option can be any form.
   2. The body of the WITH macro.
-Keep in mind that the second argument can contain declarations.
+Keep in mind that the body can start with declarations. These are the declarations written in WITH that
+apply to the variables to bound, so the expansion should place the body where declarations are allowed.
+
+If &whole is used, WHOLE-VAR is bound to the form written by the user, i.e. (NAME ARGS*), without the
+variables and the body. If that form was obtained by expanding a macro or symbol-macro, WHOLE-VAR
+is bound to the expanded form. If &environment is used, ENV-VAR is bound to the environment of WITH.
 
 As an example, let's define the with expansion MY-FILE. We will make WITH to be expanded to WITH-OPEN-FILE.
 
@@ -353,7 +359,7 @@ Finally, note that we put a docstring when we defined MY-FILE. We can retrieve i
 `````
 
 <a id="FUNCTION:CLITH:WITH"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG13"></a>
+<a id="FUNCTION:ADP-GITHUB-WRITING:TAG13"></a>
 #### Macro: clith\:with \(bindings \&body body\)
 
 `````text
@@ -400,7 +406,7 @@ will be expanded with MACROEXPAND-1 and its result must be a WITH expansion.
 `````
 
 <a id="FUNCTION:CLITH:WITHP"></a>
-<a id="FUNCTION:CLITH-DOCS:TAG14"></a>
+<a id="FUNCTION:ADP-GITHUB-WRITING:TAG14"></a>
 #### Function: clith\:withp \(sym\)
 
 `````text
